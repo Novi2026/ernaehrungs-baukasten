@@ -1,0 +1,24 @@
+{
+  "name": "Mein Ernährungs-Baukasten",
+  "short_name": "Ernährung",
+  "description": "Wochenplaner für Ernährung, Makros und Einkauf",
+  "start_url": "./ernaehrungs-baukasten.html",
+  "display": "standalone",
+  "background_color": "#f7f5f0",
+  "theme_color": "#5a8f6a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
