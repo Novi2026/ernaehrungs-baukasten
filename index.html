@@ -149,10 +149,10 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .food-info .food-meta{display:block;font-size:0.72rem;color:var(--text-light);margin-top:2px;white-space:normal;line-height:1.3}
 .food-add-btn{width:36px;height:36px;border-radius:50%;border:2px solid var(--primary);background:transparent;color:var(--primary);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
 .food-add-btn:hover{background:var(--primary);color:#fff}
-.food-expand{padding:12px;border-top:1px solid var(--border);background:var(--bg);display:none}
+.food-expand{padding:10px 12px;border-top:1px solid var(--border);background:var(--bg);display:none}
 .food-expand.open{display:block;animation:slideDown .2s ease}
 @keyframes slideDown{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-.input-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.input-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
 .input-row label{font-size:0.8rem;font-weight:600;min-width:80px}
 .stepper{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:8px;overflow:hidden}
 .stepper button{width:32px;height:32px;border:none;background:var(--bg);cursor:pointer;font-size:1rem;font-weight:700;color:var(--text-light);transition:background .15s}
@@ -162,7 +162,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .toggle-group{display:flex;gap:0;border:1.5px solid var(--border);border-radius:8px;overflow:hidden}
 .toggle-opt{padding:6px 12px;font-size:0.78rem;font-weight:600;cursor:pointer;background:var(--bg);color:var(--text-light);border:none;transition:all .2s}
 .toggle-opt.active{background:var(--primary);color:#fff}
-.btn-add{width:100%;padding:10px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;transition:background .2s;margin-top:4px}
+.btn-add{width:100%;padding:8px;background:var(--primary);color:#fff;border:none;border-radius:8px;font-size:0.85rem;font-weight:700;cursor:pointer;transition:background .2s;margin-top:2px}
 .btn-add:hover{background:var(--primary-dark)}
 .food-expand-actions{display:flex;gap:8px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--border)}
 .food-expand-actions button{padding:5px 10px;border-radius:6px;font-size:0.76rem;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--bg);color:var(--text-light);transition:all .15s}
@@ -1564,7 +1564,7 @@ function editProfile() {
 }
 
 // ===== ACTIONS =====
-function toggleExpand(fid) { expandedFood=expandedFood===fid?null:fid; renderCatalog(); if(expandedFood) setTimeout(()=>{const el=document.getElementById('fe-'+fid);if(el)el.scrollIntoView({behavior:'smooth',block:'nearest'});},50); }
+function toggleExpand(fid) { expandedFood=expandedFood===fid?null:fid; renderCatalog(); if(expandedFood) setTimeout(()=>{const btn=document.querySelector('#fe-'+fid+' .btn-add');if(btn)btn.scrollIntoView({behavior:'smooth',block:'nearest'});},80); }
 function stepVal(id,delta,min) { const el=document.getElementById(id);if(!el)return;el.value=Math.max(min,(parseInt(el.value)||min)+delta); }
 function setToggle(fid,isBasis) { const tw=document.getElementById('tw-'+fid),tb=document.getElementById('tb-'+fid);if(tw&&tb){tw.classList.toggle('active',!isBasis);tb.classList.toggle('active',isBasis);} }
 
