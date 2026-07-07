@@ -107,6 +107,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .goal-bar-fill.in-range{background:var(--primary)}
 .goal-bar-fill.below{background:var(--accent)}
 .goal-bar-fill.above{background:var(--danger)}
+.goal-bar-fill.excess{background:#5b8def}
 
 /* ===== DAY SELECTOR ===== */
 .day-selector{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--card);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
@@ -1128,28 +1129,42 @@ function scaledTargets() {
 function macroRanges() {
   const st = scaledTargets();
   const dailyKcal = profile ? profile.kcal/7 : 1800;
+  const adj = profile ? (profile.goalAdj||0) : 0;
+  const w = profile ? profile.weight : 70;
   const s = planDays;
+  // Kcal: Abnehmen=15% vom Defizit als Puffer, Halten/Zunehmen=200kcal/Wo Puffer
+  const kcalBuf = adj<0 ? Math.round(Math.abs(adj)*0.15*s) : Math.round(200*s/7);
+  // Protein: 1.2-1.6 g/kg/Tag +10% oben
+  const pMin = Math.round(1.2*w*s), pMax = Math.round(1.6*w*1.1*s);
+  // Fett: 20-30 En%, 5% Gramm-Puffer
+  const fMinRaw = Math.round(dailyKcal*0.20/9*s), fMaxRaw = Math.round(dailyKcal*0.30/9*s);
   return {
-    kcal: {min:Math.round(st.kcal*0.9), max:Math.round(st.kcal*1.05)},
-    p: {min:Math.round(st.p*0.85), max:Math.round(st.p*1.3)},
-    f: {min:Math.round(dailyKcal*0.20/9*s), max:Math.round(dailyKcal*0.30/9*s)},
+    kcal: {min:st.kcal-kcalBuf, max:st.kcal+kcalBuf},
+    p: {min:pMin, max:pMax, overColor:'excess'},
+    f: {min:fMinRaw, max:fMaxRaw, buffer:0.05, hardColors:true},
     c: {min:Math.round(st.c*0.85), max:Math.round(st.c*1.15)},
     fb: {min:Math.round(25*s), max:Math.round(st.fb*1.3)}
   };
 }
 
-function renderGoalBar(label, value, min, max, unit, maxBar) {
-  var barMax = maxBar || Math.round(max * 1.3);
+function renderGoalBar(label, value, min, max, unit, opts) {
+  opts = opts || {};
+  var barMax = Math.round(max * 1.3);
   var fillPct = Math.min(100, (value / barMax) * 100);
   var rangeLpct = (min / barMax) * 100;
   var rangeWpct = ((max - min) / barMax) * 100;
-  var status = value < min ? 'below' : value > max ? 'above' : 'in-range';
-  var display;
-  if (unit === 'g' && (value >= 1000 || min >= 1000)) {
-    display = (value/1000).toFixed(1) + ' / ' + (min/1000).toFixed(1) + '-' + (max/1000).toFixed(1) + ' kg';
+  var status;
+  if (opts.hardColors) {
+    // Fett: grün mit 5% Puffer, dann direkt rot
+    var buf = opts.buffer || 0;
+    var softMin = Math.round(min * (1 - buf)), softMax = Math.round(max * (1 + buf));
+    status = (value >= softMin && value <= softMax) ? 'in-range' : 'above';
+  } else if (opts.stayGreen && value > max) {
+    status = 'in-range';
   } else {
-    display = Math.round(value) + ' / ' + min + '-' + max + ' ' + unit;
+    status = value < min ? 'below' : value > max ? (opts.overColor || 'above') : 'in-range';
   }
+  var display = Math.round(value) + ' / ' + min + '-' + max + ' ' + unit;
   return '<div class="goal-row">' +
     '<div class="goal-header"><span class="goal-label">' + label + '</span><span class="goal-value">' + display + '</span></div>' +
     '<div class="goal-bar-track"><div class="goal-bar-range" style="left:' + rangeLpct.toFixed(1) + '%;width:' + rangeWpct.toFixed(1) + '%"></div>' +
@@ -1265,18 +1280,22 @@ function calcPlanCost(items) {
 function calcOverallScore() {
   const t = weeklyTotals(), mr = macroRanges(), cov = diversityCoverage();
   let scores = [];
-  function rangeScore(val, min, max) {
-    if (val >= min && val <= max) return 1.0;
-    if (val < min) return min > 0 ? Math.min(val / min, 1) : 0;
-    return Math.max(0.7, 1 - (val - max) / (max * 0.5));
+  function rangeScore(val, min, max, opts) {
+    opts = opts || {};
+    var effMin = min, effMax = max;
+    if (opts.buffer) { effMin = Math.round(min*(1-opts.buffer)); effMax = Math.round(max*(1+opts.buffer)); }
+    if (val >= effMin && val <= effMax) return 1.0;
+    if (val < effMin) return effMin > 0 ? Math.min(val / effMin, 1) : 0;
+    if (opts.stayGreen || opts.overColor) return 1.0; // protein excess & diversity overshoot = perfect
+    return Math.max(0.7, 1 - (val - effMax) / (effMax * 0.5));
   }
   [{v:t.kcal,r:mr.kcal},{v:t.p,r:mr.p},{v:t.f,r:mr.f},{v:t.c,r:mr.c},{v:t.fb,r:mr.fb}].forEach(function(m) {
-    scores.push(rangeScore(m.v, m.r.min, m.r.max));
+    scores.push(rangeScore(m.v, m.r.min, m.r.max, m.r));
   });
   diversityGoals().forEach(function(g) {
     var val = cov[g.id] || 0, target = scaledDiversityTarget(g.target);
-    var dMin = Math.round(target * 0.7), dMax = target;
-    scores.push(rangeScore(val, dMin, dMax));
+    var dMin = Math.round(target * 0.8), dMax = target;
+    scores.push(rangeScore(val, dMin, dMax, {stayGreen:true}));
   });
   return scores.length > 0 ? scores.reduce(function(a,b){return a+b;},0)/scores.length : 0;
 }
@@ -1302,12 +1321,14 @@ function renderScore() {
   h += '<div class="goal-list">';
   [{l:'Kalorien',k:'kcal',v:Math.round(t.kcal),u:'kcal'},{l:'Protein',k:'p',v:Math.round(t.p),u:'g'},{l:'Fett',k:'f',v:Math.round(t.f),u:'g'},{l:'Kohlenhydrate',k:'c',v:Math.round(t.c),u:'g'},{l:'Ballaststoffe',k:'fb',v:Math.round(t.fb),u:'g'}].forEach(function(m) {
     var r = mr[m.k];
-    h += renderGoalBar(m.l, m.v, r.min, r.max, m.u);
+    h += renderGoalBar(m.l, m.v, r.min, r.max, m.u, {
+      overColor: r.overColor, buffer: r.buffer, hardColors: r.hardColors
+    });
   });
   goals.forEach(function(g) {
     var val = cov[g.id] || 0, target = scaledDiversityTarget(g.target);
-    var dMin = Math.round(target * 0.7), dMax = target;
-    h += renderGoalBar(g.label, val, dMin, dMax, g.unit === 'x' ? 'x' : g.unit);
+    var dMin = Math.round(target * 0.8), dMax = target;
+    h += renderGoalBar(g.label, val, dMin, dMax, g.unit === 'x' ? 'x' : g.unit, {stayGreen: true});
   });
   h += '</div>';
   document.getElementById('scoreSection').innerHTML = h;
