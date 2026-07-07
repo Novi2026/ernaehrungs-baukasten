@@ -19,6 +19,30 @@
   --radius:12px;--shadow:0 2px 12px rgba(0,0,0,0.07);
   --tab-height:56px;
 }
+[data-theme="dark"]{
+  --bg:#1a1a1a;--card:#242424;--header:#111;--primary:#6aaf7a;--primary-light:#2a3a2e;--primary-dark:#5a9f6a;
+  --accent:#e8845c;--accent-light:#3a2820;--text:#e0e0e0;--text-light:#999;--text-muted:#666;
+  --border:#3a3a3a;--success:#4caf50;--warning:#ff9800;--danger:#e74c3c;
+  --shadow:0 2px 12px rgba(0,0,0,0.3);
+}
+[data-theme="dark"] .app-header{box-shadow:0 2px 8px rgba(0,0,0,0.5)}
+[data-theme="dark"] .tab-bar{background:var(--card);box-shadow:0 2px 6px rgba(0,0,0,0.2)}
+[data-theme="dark"] .food-card{background:var(--card)}
+[data-theme="dark"] .archive-week-header{background:var(--bg)}
+[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{background:var(--card);color:var(--text);border-color:var(--border)}
+[data-theme="dark"] .plan-item-actions button{background:var(--card)}
+[data-theme="dark"] .modal{box-shadow:0 8px 32px rgba(0,0,0,0.5)}
+[data-theme="dark"] .onboarding{background:var(--bg)}
+[data-theme="dark"] .ob-step{background:var(--card)}
+[data-theme="dark"] .water-glass{background:var(--card)}
+[data-theme="dark"] .profile-actions button{background:var(--card);color:var(--text);border-color:var(--border)}
+[data-theme="dark"] .toggle-slider::before{background:#ccc}
+[data-theme="dark"] .ob-field input,[data-theme="dark"] .ob-field select,[data-theme="dark"] .ob-radio,[data-theme="dark"] .ob-macro-card{background:var(--card);color:var(--text);border-color:var(--border)}
+[data-theme="dark"] .ob-radio.selected{background:var(--primary-light);border-color:var(--primary)}
+[data-theme="dark"] .ob-warning{background:#3a3020;color:#e0c080;border-color:var(--warning)}
+[data-theme="dark"] .search-box input{background:var(--card);color:var(--text)}
+[data-theme="dark"] .search-box input:focus{background:var(--card)}
+[data-theme="dark"] .stepper input{background:var(--card);color:var(--text)}
 html,body{overflow-x:hidden;max-width:100vw}
 body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh;min-height:100dvh;-webkit-overflow-scrolling:touch}
 
@@ -303,6 +327,17 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .archive-week{border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;overflow:hidden}
 .archive-week-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;cursor:pointer;background:var(--bg);font-size:0.85rem}
 .archive-week-header h4{font-weight:700}
+.archive-fav-btn{background:none;border:none;font-size:1.2rem;cursor:pointer;padding:0 4px;line-height:1;opacity:0.35;transition:opacity .2s}
+.archive-fav-btn.active{opacity:1}
+.archive-week.favorite{border-color:var(--accent)}
+.theme-toggle{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--bg);border-radius:var(--radius);margin-bottom:12px}
+.theme-toggle-label{font-size:0.88rem;font-weight:600}
+.toggle-switch{position:relative;width:48px;height:26px;cursor:pointer}
+.toggle-switch input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:13px;transition:background .3s}
+.toggle-slider::before{content:'';position:absolute;left:3px;top:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .3s}
+.toggle-switch input:checked+.toggle-slider{background:var(--primary)}
+.toggle-switch input:checked+.toggle-slider::before{transform:translateX(22px)}
 .archive-week-body{display:none;padding:10px 14px;border-top:1px solid var(--border);font-size:0.82rem}
 .archive-week-body.open{display:block}
 .archive-totals{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
@@ -1587,6 +1622,8 @@ function renderProfile() {
   h+='<div class="profile-row"><span class="pr-label">Ballaststoffe</span><span class="pr-value">'+profile.fiber+'g</span></div>';
   h+='<div class="profile-row"><span class="pr-label">Budget</span><span class="pr-value">'+profile.budget+' EUR/Woche</span></div>';
   h+='<div class="profile-row"><span class="pr-label">Wasser</span><span class="pr-value">'+profile.waterPerDay+' L/Tag</span></div></div>';
+  var isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  h+='<div class="theme-toggle"><span class="theme-toggle-label">Dark Mode</span><label class="toggle-switch"><input type="checkbox" onchange="toggleDarkMode(this.checked)"'+(isDark?' checked':'')+'><span class="toggle-slider"></span></label></div>';
   h+='<div class="profile-actions">';
   h+='<button onclick="editProfile()">Profil &amp; Ziele bearbeiten</button>';
   h+='<button onclick="openCustomModal()">+ Eigenes Lebensmittel</button>';
@@ -1782,22 +1819,46 @@ document.getElementById('archiveOverlay').addEventListener('click',function(e){i
 
 function renderArchiveList() {
   if(archivedWeeks.length===0){document.getElementById('archiveList').innerHTML='<div class="plan-empty">Noch keine archivierten Wochen.</div>';return;}
-  document.getElementById('archiveList').innerHTML=archivedWeeks.map((week,wi)=>{
-    const d=new Date(week.date),ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
-    return '<div class="archive-week"><div class="archive-week-header" onclick="toggleArchiveWeek('+wi+')"><h4>'+ds+'</h4><span style="font-size:0.78rem;color:var(--text-light)">'+week.items.length+' Eintr. | '+week.cost.toFixed(2)+' EUR</span></div><div class="archive-week-body" id="awb-'+wi+'"><div class="archive-totals"><span>'+week.totals.kcal+' kcal</span><span>'+week.totals.p+'g E</span><span>'+week.totals.f+'g F</span><span>'+week.totals.c+'g KH</span></div><div style="margin-top:8px"><button class="header-btn" style="font-size:0.78rem;color:var(--primary);border-color:var(--primary)" onclick="restoreWeek('+wi+')">Wiederherstellen</button> <button class="header-btn" style="font-size:0.78rem;color:var(--danger);border-color:var(--danger)" onclick="deleteArchiveWeek('+wi+')">Löschen</button></div></div></div>';
+  // Sort: favorites first, then by date (newest first within each group)
+  var sorted=archivedWeeks.map(function(w,i){return {w:w,i:i};});
+  sorted.sort(function(a,b){return (b.w.favorite?1:0)-(a.w.favorite?1:0) || b.i-a.i+a.i-b.i;});
+  // Keep original index order but favorites first
+  var favs=sorted.filter(function(x){return x.w.favorite;}), rest=sorted.filter(function(x){return !x.w.favorite;});
+  sorted=favs.concat(rest);
+  document.getElementById('archiveList').innerHTML=sorted.map(function(x){
+    var week=x.w, wi=x.i;
+    var d=new Date(week.date),ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+    var favClass=week.favorite?'active':'';
+    var weekClass=week.favorite?'archive-week favorite':'archive-week';
+    return '<div class="'+weekClass+'"><div class="archive-week-header" onclick="toggleArchiveWeek('+wi+')"><div style="display:flex;align-items:center;gap:8px"><button class="archive-fav-btn '+favClass+'" onclick="event.stopPropagation();toggleArchiveFav('+wi+')">&#9733;</button><h4>'+ds+'</h4></div><span style="font-size:0.78rem;color:var(--text-light)">'+week.items.length+' Eintr. | '+week.cost.toFixed(2)+' EUR</span></div><div class="archive-week-body" id="awb-'+wi+'"><div class="archive-totals"><span>'+week.totals.kcal+' kcal</span><span>'+week.totals.p+'g E</span><span>'+week.totals.f+'g F</span><span>'+week.totals.c+'g KH</span></div><div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><button class="header-btn" style="font-size:0.78rem;color:var(--primary);border-color:var(--primary)" onclick="loadWeekTemplate('+wi+')">Als Vorlage</button><button class="header-btn" style="font-size:0.78rem;color:var(--text-light);border-color:var(--border)" onclick="restoreWeek('+wi+')">Ergänzen</button><button class="header-btn" style="font-size:0.78rem;color:var(--danger);border-color:var(--danger)" onclick="deleteArchiveWeek('+wi+')">Löschen</button></div></div></div>';
   }).join('');
 }
 function toggleArchiveWeek(wi){const b=document.getElementById('awb-'+wi);if(b)b.classList.toggle('open');}
 
+function loadWeekTemplate(wi) {
+  const week=archivedWeeks[wi]; if(!week)return;
+  if(plan.length>0 && !confirm('Aktuellen Plan ersetzen mit dieser Vorlage?'))return;
+  plan.length=0;
+  let loaded=0;
+  week.items.forEach(a=>{
+    const food=getFood(a.foodId); if(!food)return;
+    plan.push({foodId:a.foodId,portionG:a.portionG,servings:a.servings,isBasis:!!a.isBasis,recipeId:a.recipeId||null});
+    loaded++;
+  });
+  if(week.days) planDays=week.days;
+  closeArchive(); showToast('Vorlage geladen: '+loaded+' Einträge'); render();
+}
+
 function restoreWeek(wi) {
-  const week=archivedWeeks[wi]; if(!week||!confirm('Wochenitems wiederherstellen?'))return;
+  const week=archivedWeeks[wi]; if(!week||!confirm('Fehlende Items zum aktuellen Plan ergänzen?'))return;
   let added=0;
   week.items.filter(i=>!i.isBasis&&!i.recipeId).forEach(a=>{
     const food=getFood(a.foodId); if(!food||plan.find(p=>p.foodId===a.foodId))return;
     plan.push({foodId:a.foodId,portionG:a.portionG,servings:a.servings,isBasis:false}); added++;
   });
-  closeArchive(); showToast(added+' Einträge wiederhergestellt'); render();
+  closeArchive(); showToast(added+' Einträge ergänzt'); render();
 }
+function toggleArchiveFav(wi){archivedWeeks[wi].favorite=!archivedWeeks[wi].favorite;saveState();renderArchiveList();}
 function deleteArchiveWeek(wi){if(!confirm('Löschen?'))return;archivedWeeks.splice(wi,1);saveState();renderArchiveList();}
 
 // ===== EXPORT / IMPORT =====
@@ -1858,6 +1919,15 @@ function formatPrice(price,prRef){
   return price.toFixed(2)+' EUR/'+prRef+'g';
 }
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
+
+// ===== DARK MODE =====
+function toggleDarkMode(on) {
+  document.documentElement.setAttribute('data-theme', on ? 'dark' : 'light');
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', on ? '#111' : '#2c2c2a');
+  localStorage.setItem('pbe_theme', on ? 'dark' : 'light');
+}
+// Restore theme early to avoid flash
+(function(){var t=localStorage.getItem('pbe_theme');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');document.querySelector('meta[name="theme-color"]').setAttribute('content','#111');}})();
 
 // ===== INIT =====
 const hasProfile = loadState();
