@@ -1,7 +1,7 @@
 {
-  "name": "Mein Ernährungs-Baukasten",
-  "short_name": "Ernährung",
-  "description": "Wochenplaner für Ernährung, Makros und Einkauf",
+  "name": "built. buy. eat. REPEAT ✓",
+  "short_name": "built.buy.eat.",
+  "description": "Dein smarter Wochenplaner für Ernährung, Makros und Einkauf",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f7f5f0",
