@@ -288,8 +288,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;display:flex;align-items:center;justify-content:center}
 .confirm-box{background:var(--card);border-radius:var(--radius);padding:24px;max-width:340px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.2)}
 .confirm-box p{margin-bottom:16px;font-size:0.92rem;line-height:1.5}
-.toast{position:fixed;bottom:calc(var(--tab-height) + 16px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%) translateY(80px);background:var(--header);color:#fff;padding:10px 24px;border-radius:24px;font-size:0.82rem;font-weight:600;z-index:400;transition:transform .3s ease;pointer-events:none}
-.toast.show{transform:translateX(-50%) translateY(0)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--header);color:#fff;padding:10px 24px;border-radius:24px;font-size:0.82rem;font-weight:600;z-index:400;transition:transform .3s ease;pointer-events:none;opacity:0}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 .archive-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:250;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
 .archive-overlay.open{opacity:1;pointer-events:auto}
 .archive-panel{background:var(--card);border-radius:var(--radius);width:94%;max-width:560px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.2)}
@@ -358,7 +358,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
         </div>
       </div>
       <div class="ob-field"><label>Dein Ziel</label>
-        <div class="ob-radio-group" id="obGoal">
+        <div class="ob-radio-group" id="obGoal" style="flex-direction:column">
           <div class="ob-radio" data-val="deficit" onclick="obSelectRadio('obGoal','deficit')"><strong>Abnehmen</strong><span class="ob-radio-desc">Kaloriendefizit für Gewichtsverlust</span></div>
           <div class="ob-radio" data-val="maintain" onclick="obSelectRadio('obGoal','maintain')"><strong>Gewicht halten</strong><span class="ob-radio-desc">Essen auf Bedarf — Gewicht stabil</span></div>
           <div class="ob-radio" data-val="surplus" onclick="obSelectRadio('obGoal','surplus')"><strong>Aufbauen</strong><span class="ob-radio-desc">Kalorienüberschuss für Muskelaufbau</span></div>
@@ -569,6 +569,13 @@ const FOODS_BASE = [
   {id:'orange',n:'Orangen',cat:'fruit',k:47,p:0.9,f:0.1,c:12,fb:2.4,pr:2.5,prRef:1000,po:150,mg:['berries'],unit:'stueck',pieceWeight:180,packageSize:1000},
   {id:'kiwi',n:'Kiwi',cat:'fruit',k:61,p:1.1,f:0.5,c:15,fb:3,pr:4,prRef:1000,po:75,mg:['berries'],unit:'stueck',pieceWeight:75,packageSize:500},
   {id:'grapes',n:'Trauben',cat:'fruit',k:69,p:0.7,f:0.2,c:18,fb:0.9,pr:3,prRef:1000,po:150,mg:[],unit:'g',pieceWeight:null,packageSize:500},
+  {id:'strawberries',n:'Erdbeeren',cat:'fruit',k:32,p:0.7,f:0.3,c:7.7,fb:2,pr:5,prRef:1000,po:125,mg:['berries'],unit:'g',pieceWeight:null,packageSize:500},
+  {id:'blueberries',n:'Heidelbeeren',cat:'fruit',k:57,p:0.7,f:0.3,c:14,fb:2.4,pr:10,prRef:1000,po:125,mg:['berries'],unit:'g',pieceWeight:null,packageSize:300},
+  {id:'raspberries',n:'Himbeeren',cat:'fruit',k:52,p:1.2,f:0.7,c:12,fb:6.5,pr:12,prRef:1000,po:125,mg:['berries'],unit:'g',pieceWeight:null,packageSize:125},
+  {id:'nectarine',n:'Nektarine',cat:'fruit',k:44,p:1.1,f:0.3,c:10,fb:1.7,pr:3,prRef:1000,po:150,mg:[],unit:'stueck',pieceWeight:150,packageSize:1000},
+  {id:'fruchtmus',n:'Fruchtmus',cat:'fruit',k:50,p:0.4,f:0.2,c:12,fb:1.5,pr:3,prRef:1000,po:100,mg:[],unit:'g',pieceWeight:null,packageSize:200},
+  {id:'mango',n:'Mango',cat:'fruit',k:60,p:0.8,f:0.4,c:15,fb:1.6,pr:5,prRef:1000,po:150,mg:[],unit:'stueck',pieceWeight:300,packageSize:300},
+  {id:'pear',n:'Birnen',cat:'fruit',k:58,p:0.4,f:0.1,c:15,fb:3.1,pr:2,prRef:1000,po:150,mg:[],unit:'stueck',pieceWeight:180,packageSize:1000},
   {id:'broccoli',n:'Brokkoli',cat:'veg',k:34,p:2.8,f:0.4,c:7,fb:2.6,pr:2.5,prRef:1000,po:200,mg:['greens'],unit:'g',pieceWeight:null,packageSize:500},
   {id:'spinach',n:'Spinat',cat:'veg',k:23,p:2.9,f:0.4,c:3.6,fb:2.2,pr:2.5,prRef:1000,po:150,mg:['greens'],unit:'g',pieceWeight:null,packageSize:450},
   {id:'bellpepper',n:'Paprika',cat:'veg',k:31,p:1,f:0.3,c:6,fb:1.7,pr:3.5,prRef:1000,po:150,mg:['orange'],unit:'stueck',pieceWeight:160,packageSize:500},
