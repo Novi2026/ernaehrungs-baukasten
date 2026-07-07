@@ -147,7 +147,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .food-info{flex:1;min-width:0}
 .food-info h4{font-size:0.85rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .food-info .food-meta{display:block;font-size:0.72rem;color:var(--text-light);margin-top:2px;white-space:normal;line-height:1.3}
-.food-add-btn{width:32px;height:32px;border-radius:50%;border:2px solid var(--primary);background:transparent;color:var(--primary);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.food-add-btn{width:36px;height:36px;border-radius:50%;border:2px solid var(--primary);background:transparent;color:var(--primary);font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
 .food-add-btn:hover{background:var(--primary);color:#fff}
 .food-expand{padding:12px;border-top:1px solid var(--border);background:var(--bg);display:none}
 .food-expand.open{display:block;animation:slideDown .2s ease}
@@ -288,8 +288,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;display:flex;align-items:center;justify-content:center}
 .confirm-box{background:var(--card);border-radius:var(--radius);padding:24px;max-width:340px;width:90%;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.2)}
 .confirm-box p{margin-bottom:16px;font-size:0.92rem;line-height:1.5}
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--header);color:#fff;padding:10px 24px;border-radius:24px;font-size:0.82rem;font-weight:600;z-index:400;transition:transform .3s ease;pointer-events:none;opacity:0}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--header);color:#fff;padding:10px 24px;border-radius:24px;font-size:0.82rem;font-weight:600;z-index:400;transition:transform .3s ease,opacity .3s ease;pointer-events:none;opacity:0;visibility:hidden}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;visibility:visible}
 .archive-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:250;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
 .archive-overlay.open{opacity:1;pointer-events:auto}
 .archive-panel{background:var(--card);border-radius:var(--radius);width:94%;max-width:560px;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 8px 32px rgba(0,0,0,0.2)}
@@ -569,13 +569,14 @@ const FOODS_BASE = [
   {id:'orange',n:'Orangen',cat:'fruit',k:47,p:0.9,f:0.1,c:12,fb:2.4,pr:2.5,prRef:1000,po:150,mg:['berries'],unit:'stueck',pieceWeight:180,packageSize:1000},
   {id:'kiwi',n:'Kiwi',cat:'fruit',k:61,p:1.1,f:0.5,c:15,fb:3,pr:4,prRef:1000,po:75,mg:['berries'],unit:'stueck',pieceWeight:75,packageSize:500},
   {id:'grapes',n:'Trauben',cat:'fruit',k:69,p:0.7,f:0.2,c:18,fb:0.9,pr:3,prRef:1000,po:150,mg:[],unit:'g',pieceWeight:null,packageSize:500},
-  {id:'strawberries',n:'Erdbeeren',cat:'fruit',k:32,p:0.7,f:0.3,c:7.7,fb:2,pr:5,prRef:1000,po:125,mg:['berries'],unit:'g',pieceWeight:null,packageSize:500},
-  {id:'blueberries',n:'Heidelbeeren',cat:'fruit',k:57,p:0.7,f:0.3,c:14,fb:2.4,pr:10,prRef:1000,po:125,mg:['berries'],unit:'g',pieceWeight:null,packageSize:300},
-  {id:'raspberries',n:'Himbeeren',cat:'fruit',k:52,p:1.2,f:0.7,c:12,fb:6.5,pr:12,prRef:1000,po:125,mg:['berries'],unit:'g',pieceWeight:null,packageSize:125},
-  {id:'nectarine',n:'Nektarine',cat:'fruit',k:44,p:1.1,f:0.3,c:10,fb:1.7,pr:3,prRef:1000,po:150,mg:[],unit:'stueck',pieceWeight:150,packageSize:1000},
-  {id:'fruchtmus',n:'Fruchtmus',cat:'fruit',k:50,p:0.4,f:0.2,c:12,fb:1.5,pr:3,prRef:1000,po:100,mg:[],unit:'g',pieceWeight:null,packageSize:200},
+  {id:'strawberries',n:'Erdbeeren',cat:'fruit',k:35,p:0.8,f:0.4,c:5.5,fb:1.6,pr:4.99,prRef:1000,po:100,mg:['berries'],unit:'g',pieceWeight:null,packageSize:1000},
+  {id:'blueberries',n:'Heidelbeeren',cat:'fruit',k:46,p:0.6,f:0.6,c:6.1,fb:4.9,pr:3.99,prRef:400,po:100,mg:['berries'],unit:'g',pieceWeight:null,packageSize:400},
+  {id:'raspberries',n:'Himbeeren',cat:'fruit',k:43,p:1.3,f:0.3,c:4.8,fb:4.7,pr:1.99,prRef:120,po:120,mg:['berries'],unit:'g',pieceWeight:null,packageSize:120},
+  {id:'nectarine',n:'Nektarine',cat:'fruit',k:60,p:0.9,f:0.1,c:12.4,fb:2.2,pr:2.99,prRef:1000,po:100,mg:[],unit:'stueck',pieceWeight:150,packageSize:1000},
+  {id:'fruchtmus',n:'Fruchtmus',cat:'fruit',k:63,p:0.7,f:0.5,c:12,fb:1.5,pr:1.49,prRef:360,po:60,mg:[],unit:'g',pieceWeight:null,packageSize:360},
   {id:'mango',n:'Mango',cat:'fruit',k:60,p:0.8,f:0.4,c:15,fb:1.6,pr:5,prRef:1000,po:150,mg:[],unit:'stueck',pieceWeight:300,packageSize:300},
   {id:'pear',n:'Birnen',cat:'fruit',k:58,p:0.4,f:0.1,c:15,fb:3.1,pr:2,prRef:1000,po:150,mg:[],unit:'stueck',pieceWeight:180,packageSize:1000},
+  {id:'watermelon',n:'Wassermelone',cat:'fruit',k:39,p:0.6,f:0.2,c:8,fb:0.2,pr:1.49,prRef:1000,po:100,mg:['fruit'],unit:'g',pieceWeight:null,packageSize:1000},
   {id:'broccoli',n:'Brokkoli',cat:'veg',k:34,p:2.8,f:0.4,c:7,fb:2.6,pr:2.5,prRef:1000,po:200,mg:['greens'],unit:'g',pieceWeight:null,packageSize:500},
   {id:'spinach',n:'Spinat',cat:'veg',k:23,p:2.9,f:0.4,c:3.6,fb:2.2,pr:2.5,prRef:1000,po:150,mg:['greens'],unit:'g',pieceWeight:null,packageSize:450},
   {id:'bellpepper',n:'Paprika',cat:'veg',k:31,p:1,f:0.3,c:6,fb:1.7,pr:3.5,prRef:1000,po:150,mg:['orange'],unit:'stueck',pieceWeight:160,packageSize:500},
@@ -587,6 +588,9 @@ const FOODS_BASE = [
   {id:'cauliflower',n:'Blumenkohl',cat:'veg',k:25,p:1.9,f:0.3,c:5,fb:2,pr:2.5,prRef:1000,po:200,mg:[],unit:'stueck',pieceWeight:600,packageSize:600},
   {id:'mushroom',n:'Champignons',cat:'veg',k:22,p:3.1,f:0.3,c:3.3,fb:1,pr:4,prRef:1000,po:100,mg:[],unit:'g',pieceWeight:null,packageSize:400},
   {id:'kale',n:'Grünkohl',cat:'veg',k:49,p:4.3,f:0.9,c:8.7,fb:3.6,pr:3,prRef:1000,po:150,mg:['greens'],unit:'g',pieceWeight:null,packageSize:500},
+  {id:'iceberg',n:'Eisbergsalat',cat:'veg',k:15,p:1,f:0.2,c:1.6,fb:1.1,pr:0.89,prRef:500,po:100,mg:['veg'],unit:'g',pieceWeight:null,packageSize:500},
+  {id:'kohlrabi',n:'Kohlrabi',cat:'veg',k:28,p:1.9,f:0.2,c:3.7,fb:1.5,pr:0.59,prRef:350,po:350,mg:['veg'],unit:'stueck',pieceWeight:350,packageSize:350},
+  {id:'spring_onion',n:'Frühlingszwiebeln',cat:'veg',k:47,p:0.9,f:0.3,c:8.5,fb:2.8,pr:0.79,prRef:120,po:60,mg:['veg'],unit:'g',pieceWeight:null,packageSize:120},
   {id:'chicken',n:'Hähnchenbrust',cat:'protein',k:165,p:31,f:3.6,c:0,fb:0,pr:9,prRef:1000,po:150,mg:[],unit:'g',pieceWeight:null,packageSize:500},
   {id:'salmon',n:'Lachs',cat:'protein',k:208,p:20,f:13,c:0,fb:0,pr:18,prRef:1000,po:150,mg:['fish'],unit:'g',pieceWeight:null,packageSize:400},
   {id:'tuna_can',n:'Thunfisch (Dose)',cat:'protein',k:116,p:26,f:1,c:0,fb:0,pr:1.5,prRef:150,po:150,mg:['fish'],unit:'g',pieceWeight:null,packageSize:150},
@@ -595,10 +599,19 @@ const FOODS_BASE = [
   {id:'turkey',n:'Putenbrust',cat:'protein',k:135,p:30,f:1.5,c:0,fb:0,pr:10,prRef:1000,po:150,mg:[],unit:'g',pieceWeight:null,packageSize:400},
   {id:'shrimp',n:'Garnelen',cat:'protein',k:99,p:24,f:0.3,c:0.2,fb:0,pr:14,prRef:1000,po:150,mg:['fish'],unit:'g',pieceWeight:null,packageSize:400},
   {id:'tofu',n:'Tofu',cat:'protein',k:76,p:8,f:4.8,c:1.9,fb:0.3,pr:4.5,prRef:1000,po:150,mg:['legumes'],unit:'g',pieceWeight:null,packageSize:400},
+  {id:'geflugelsalami',n:'Geflügelsalami',cat:'protein',k:219,p:22,f:14,c:1,fb:0.4,pr:2.49,prRef:130,po:130,mg:[],unit:'g',pieceWeight:null,packageSize:130},
+  {id:'geflugel_wiener',n:'Geflügel-Wiener',cat:'protein',k:204,p:14,f:15.9,c:1,fb:0.3,pr:2.79,prRef:200,po:200,mg:[],unit:'g',pieceWeight:null,packageSize:200},
+  {id:'proteinpudding',n:'Proteinpudding',cat:'protein',k:76,p:10,f:1.5,c:5.5,fb:0,pr:0.89,prRef:200,po:200,mg:['dairy'],unit:'g',pieceWeight:null,packageSize:200},
+  {id:'schinkenwuerfel',n:'Schinkenwürfel leicht',cat:'protein',k:128,p:24,f:3,c:1,fb:0.5,pr:1.99,prRef:150,po:75,mg:[],unit:'g',pieceWeight:null,packageSize:150},
+  {id:'puten_ministeaks',n:'Puten Ministeaks',cat:'protein',k:110,p:23,f:2,c:0,fb:0,pr:4.99,prRef:400,po:400,mg:[],unit:'g',pieceWeight:null,packageSize:400},
   {id:'red_lentils',n:'Rote Linsen',cat:'legumes',k:353,p:25,f:1,c:60,fb:11,pr:3.5,prRef:1000,po:80,mg:['legumes'],unit:'g',pieceWeight:null,packageSize:500},
   {id:'chickpeas',n:'Kichererbsen (Dose)',cat:'legumes',k:119,p:7,f:2.6,c:18,fb:5,pr:1.3,prRef:240,po:240,mg:['legumes'],unit:'g',pieceWeight:null,packageSize:240},
   {id:'kidney',n:'Kidneybohnen (Dose)',cat:'legumes',k:127,p:8,f:0.5,c:22,fb:7,pr:1.2,prRef:240,po:240,mg:['legumes'],unit:'g',pieceWeight:null,packageSize:240},
   {id:'edamame',n:'Edamame (TK)',cat:'legumes',k:122,p:11,f:5,c:9,fb:5,pr:5,prRef:1000,po:100,mg:['legumes'],unit:'g',pieceWeight:null,packageSize:500},
+  {id:'linsenwaffeln',n:'Linsenwaffeln',cat:'legumes',k:369,p:21.8,f:1.3,c:65,fb:5,pr:1.29,prRef:100,po:7,mg:['legumes'],unit:'g',pieceWeight:null,packageSize:100},
+  {id:'flohsamenschalen',n:'Flohsamenschalen',cat:'legumes',k:191,p:1,f:0.2,c:2.2,fb:88,pr:5.25,prRef:200,po:10,mg:['legumes'],unit:'g',pieceWeight:null,packageSize:200},
+  {id:'gruene_linsen',n:'Grüne Tellerlinsen',cat:'legumes',k:312,p:24.3,f:1.6,c:39,fb:22,pr:1.99,prRef:500,po:40,mg:['legumes'],unit:'g',pieceWeight:null,packageSize:500},
+  {id:'edamame_roasted',n:'Edamame geröstet & gesalzen',cat:'legumes',k:428,p:43,f:18,c:16,fb:15,pr:2.99,prRef:200,po:20,mg:['legumes'],unit:'g',pieceWeight:null,packageSize:200},
   {id:'oats',n:'Haferflocken',cat:'grains',k:379,p:13,f:7,c:67,fb:10,pr:2,prRef:1000,po:50,mg:['wholegrains'],unit:'g',pieceWeight:null,packageSize:500},
   {id:'rice',n:'Vollkornreis',cat:'grains',k:362,p:7.5,f:2.7,c:76,fb:3.5,pr:3,prRef:1000,po:75,mg:['wholegrains'],unit:'g',pieceWeight:null,packageSize:1000},
   {id:'pasta',n:'Vollkornnudeln',cat:'grains',k:348,p:13,f:2.5,c:65,fb:5,pr:2.5,prRef:1000,po:80,mg:['wholegrains'],unit:'g',pieceWeight:null,packageSize:500},
@@ -606,6 +619,11 @@ const FOODS_BASE = [
   {id:'potato',n:'Kartoffeln',cat:'grains',k:77,p:2,f:0.1,c:17,fb:2.2,pr:1.5,prRef:1000,po:200,mg:[],unit:'g',pieceWeight:null,packageSize:2000},
   {id:'bread',n:'Vollkornbrot',cat:'grains',k:247,p:8,f:3,c:46,fb:6,pr:3,prRef:1000,po:60,mg:['wholegrains'],unit:'g',pieceWeight:null,packageSize:500},
   {id:'couscous',n:'Couscous',cat:'grains',k:376,p:13,f:0.6,c:77,fb:2,pr:3.5,prRef:1000,po:60,mg:[],unit:'g',pieceWeight:null,packageSize:500},
+  {id:'saatenbrot',n:'Meister-Saaten-Brot',cat:'grains',k:244,p:8.5,f:5.5,c:37,fb:4.4,pr:1.99,prRef:750,po:85,mg:[],unit:'g',pieceWeight:null,packageSize:750},
+  {id:'dinkel',n:'Dinkel (Getreide)',cat:'grains',k:353,p:14,f:2.6,c:64,fb:8.4,pr:1.75,prRef:1000,po:33,mg:['wholegrains'],unit:'g',pieceWeight:null,packageSize:1000},
+  {id:'buchweizen',n:'Buchweizen',cat:'grains',k:340,p:12.6,f:2.9,c:62,fb:7.4,pr:1.99,prRef:1000,po:50,mg:['wholegrains'],unit:'g',pieceWeight:null,packageSize:1000},
+  {id:'hafer',n:'Hafer (Getreide)',cat:'grains',k:349,p:11,f:7.1,c:56,fb:9.7,pr:1.25,prRef:500,po:33,mg:['wholegrains'],unit:'g',pieceWeight:null,packageSize:500},
+  {id:'bauernkruste',n:'Bauernkruste',cat:'grains',k:237,p:8,f:2.7,c:43,fb:4.4,pr:1.99,prRef:600,po:100,mg:[],unit:'g',pieceWeight:null,packageSize:600},
   {id:'quark',n:'Magerquark',cat:'dairy',k:67,p:12,f:0.3,c:4,fb:0,pr:1,prRef:500,po:150,mg:['dairy'],unit:'g',pieceWeight:null,packageSize:500},
   {id:'greek_yog',n:'Griech. Joghurt',cat:'dairy',k:97,p:9,f:5,c:3.6,fb:0,pr:2.2,prRef:400,po:150,mg:['dairy'],unit:'g',pieceWeight:null,packageSize:400},
   {id:'skyr',n:'Skyr',cat:'dairy',k:63,p:11,f:0.2,c:4,fb:0,pr:1.3,prRef:450,po:150,mg:['dairy'],unit:'g',pieceWeight:null,packageSize:450},
@@ -613,6 +631,12 @@ const FOODS_BASE = [
   {id:'gouda',n:'Gouda',cat:'dairy',k:356,p:25,f:27,c:2,fb:0,pr:9,prRef:1000,po:30,mg:['dairy'],unit:'g',pieceWeight:null,packageSize:400},
   {id:'mozzarella',n:'Mozzarella',cat:'dairy',k:280,p:28,f:17,c:3,fb:0,pr:6,prRef:1000,po:60,mg:['dairy'],unit:'g',pieceWeight:null,packageSize:125},
   {id:'milk',n:'Milch 1,5%',cat:'dairy',k:47,p:3.4,f:1.5,c:4.9,fb:0,pr:1.1,prRef:1000,po:200,mg:['dairy'],unit:'ml',pieceWeight:null,packageSize:1000},
+  {id:'mandelmilch',n:'Mandelmilch Bio',cat:'dairy',k:15,p:0.5,f:1.3,c:0.1,fb:0.3,pr:1.35,prRef:1000,po:200,mg:[],unit:'ml',pieceWeight:null,packageSize:1000},
+  {id:'grillkaese',n:'Grillkäse',cat:'dairy',k:323,p:23.5,f:25,c:1,fb:0,pr:2.49,prRef:200,po:100,mg:[],unit:'g',pieceWeight:null,packageSize:200},
+  {id:'dattel_curry',n:'Dattel-Curry Dip',cat:'dairy',k:274,p:3.5,f:22.8,c:12.9,fb:1.3,pr:1.49,prRef:150,po:75,mg:['dairy'],unit:'g',pieceWeight:null,packageSize:150},
+  {id:'quarkcreme',n:'Quarkcreme',cat:'dairy',k:67,p:12.4,f:0.5,c:3.2,fb:0,pr:0.79,prRef:200,po:200,mg:['dairy'],unit:'g',pieceWeight:null,packageSize:200},
+  {id:'feta',n:'Feta',cat:'dairy',k:276,p:16.5,f:23,c:0.7,fb:0,pr:1.79,prRef:200,po:100,mg:['dairy'],unit:'g',pieceWeight:null,packageSize:200},
+  {id:'patros_leicht',n:'Patros Leicht',cat:'dairy',k:220,p:20,f:15,c:0.6,fb:0,pr:1.99,prRef:150,po:150,mg:['dairy'],unit:'g',pieceWeight:null,packageSize:150},
   {id:'olive_oil',n:'Olivenöl',cat:'fats',k:884,p:0,f:100,c:0,fb:0,pr:7,prRef:920,po:10,mg:[],unit:'ml',pieceWeight:null,packageSize:500},
   {id:'avocado',n:'Avocado',cat:'fats',k:160,p:2,f:15,c:9,fb:7,pr:1.5,prRef:150,po:75,mg:[],unit:'stueck',pieceWeight:150,packageSize:150},
   {id:'almonds',n:'Mandeln',cat:'fats',k:579,p:21,f:49,c:22,fb:12,pr:12,prRef:1000,po:25,mg:['nuts'],unit:'g',pieceWeight:null,packageSize:200},
@@ -620,9 +644,30 @@ const FOODS_BASE = [
   {id:'flaxseed',n:'Leinsamen',cat:'fats',k:534,p:18,f:42,c:29,fb:27,pr:4,prRef:1000,po:10,mg:['nuts'],unit:'g',pieceWeight:null,packageSize:500},
   {id:'chia',n:'Chiasamen',cat:'fats',k:486,p:17,f:31,c:42,fb:34,pr:10,prRef:1000,po:15,mg:['nuts'],unit:'g',pieceWeight:null,packageSize:250},
   {id:'peanut_butter',n:'Erdnussbutter',cat:'fats',k:588,p:25,f:50,c:20,fb:6,pr:5,prRef:350,po:15,mg:['nuts'],unit:'g',pieceWeight:null,packageSize:350},
+  {id:'mandeln_geroestet',n:'Mandeln geröstet & gesalzen',cat:'fats',k:643,p:24.9,f:56,c:5.8,fb:8,pr:2.19,prRef:150,po:33,mg:['nuts'],unit:'g',pieceWeight:null,packageSize:150},
+  {id:'mandeln_honig',n:'Mandeln Honig & Salz',cat:'fats',k:545,p:17.2,f:35.8,c:35.7,fb:5.5,pr:2.19,prRef:150,po:33,mg:['nuts'],unit:'g',pieceWeight:null,packageSize:150},
+  {id:'erdnussmus',n:'Erdnussmus gesalzen',cat:'fats',k:619,p:27,f:50,c:13,fb:9.7,pr:4.99,prRef:500,po:20,mg:[],unit:'g',pieceWeight:null,packageSize:500},
+  {id:'hanfsamen',n:'Hanfsamen',cat:'fats',k:611,p:0,f:51,c:2.4,fb:3.9,pr:2.95,prRef:200,po:15,mg:['nuts'],unit:'g',pieceWeight:null,packageSize:200},
+  {id:'kuerbiskerne',n:'Kürbiskerne',cat:'fats',k:595,p:37,f:48,c:1.3,fb:6.3,pr:2.05,prRef:225,po:10,mg:['nuts'],unit:'g',pieceWeight:null,packageSize:225},
+  {id:'sonnenblumenkerne',n:'Sonnenblumenkerne',cat:'fats',k:609,p:27,f:49,c:12,fb:6.3,pr:1.35,prRef:500,po:10,mg:['nuts'],unit:'g',pieceWeight:null,packageSize:500},
+  {id:'butter',n:'Butter',cat:'fats',k:748,p:0.7,f:82.5,c:0.7,fb:0,pr:1.99,prRef:250,po:10,mg:[],unit:'g',pieceWeight:null,packageSize:250},
   {id:'honey',n:'Honig',cat:'other',k:304,p:0.3,f:0,c:82,fb:0,pr:8,prRef:1000,po:15,mg:[],unit:'g',pieceWeight:null,packageSize:500},
   {id:'protein_powder',n:'Proteinpulver',cat:'other',k:390,p:80,f:5,c:5,fb:0,pr:25,prRef:1000,po:30,mg:[],unit:'g',pieceWeight:null,packageSize:1000},
   {id:'dark_choc',n:'Zartbitterschokolade',cat:'other',k:546,p:5,f:31,c:60,fb:7,pr:2,prRef:100,po:20,mg:[],unit:'g',pieceWeight:null,packageSize:100},
+  {id:'hohes_c',n:'Hohes C Eisen',cat:'other',k:42,p:0,f:0,c:9.8,fb:0,pr:1.44,prRef:1000,po:150,mg:[],unit:'ml',pieceWeight:null,packageSize:1000},
+  {id:'datteln',n:'Datteln',cat:'other',k:284,p:2.3,f:0.5,c:64.5,fb:8.5,pr:1.49,prRef:250,po:5,mg:['fruit'],unit:'g',pieceWeight:null,packageSize:250},
+  {id:'hollandaise',n:'Hollandaise leicht',cat:'other',k:94,p:0.5,f:7.6,c:5.6,fb:0.5,pr:1.29,prRef:250,po:125,mg:[],unit:'g',pieceWeight:null,packageSize:250},
+  {id:'nutella',n:'Nutella',cat:'other',k:547,p:6.6,f:31.8,c:56.9,fb:0,pr:2.99,prRef:500,po:25,mg:[],unit:'g',pieceWeight:null,packageSize:500},
+  {id:'kinder_bueno',n:'Kinder Bueno',cat:'other',k:574,p:8.6,f:37.3,c:49.5,fb:0,pr:3.29,prRef:172,po:21,mg:[],unit:'g',pieceWeight:null,packageSize:172},
+  {id:'schoki_70',n:'Schoki 70% Edelbitter',cat:'other',k:545,p:8.4,f:40,c:31.9,fb:11.7,pr:1.99,prRef:125,po:10,mg:[],unit:'g',pieceWeight:null,packageSize:125},
+  {id:'more_protein',n:'More Protein Haselnuss-Nougat',cat:'other',k:373,p:75,f:4.3,c:5,fb:1.9,pr:34.99,prRef:600,po:10,mg:[],unit:'g',pieceWeight:null,packageSize:600},
+  {id:'dessertsauce',n:'Dessertsauce (Kakao)',cat:'other',k:735,p:3.5,f:58.9,c:45.5,fb:3.9,pr:2.49,prRef:259,po:9,mg:[],unit:'g',pieceWeight:null,packageSize:259},
+  {id:'ahornsirup',n:'Ahornsirup',cat:'other',k:355,p:1.2,f:0,c:87.6,fb:0,pr:2.99,prRef:10,po:10,mg:[],unit:'ml',pieceWeight:null,packageSize:10},
+  {id:'pb_balls',n:'Peanut Butter Balls Bars',cat:'other',k:443,p:6.5,f:19,c:56,fb:11,pr:1.99,prRef:120,po:24,mg:[],unit:'g',pieceWeight:null,packageSize:120},
+  {id:'granola_riegel',n:'Granola Riegel MadeGood',cat:'other',k:437,p:7.7,f:12,c:71,fb:6.2,pr:1.99,prRef:144,po:24,mg:['nuts'],unit:'g',pieceWeight:null,packageSize:144},
+  {id:'milka_darkmilk',n:'Milka darkmilk Nougat-Creme',cat:'other',k:575,p:6.9,f:39,c:47,fb:4,pr:1.99,prRef:85,po:17,mg:[],unit:'g',pieceWeight:null,packageSize:85},
+  {id:'bier_blanc',n:'Bier Blanc 1664',cat:'other',k:45,p:0.5,f:0.1,c:3.3,fb:0,pr:1,prRef:330,po:330,mg:[],unit:'ml',pieceWeight:null,packageSize:330},
+  {id:'erdinger_af',n:'Erdinger Alkoholfrei Grapefruit',cat:'other',k:25,p:0,f:0,c:5.7,fb:0,pr:1,prRef:330,po:330,mg:[],unit:'ml',pieceWeight:null,packageSize:330},
 ];
 
 const CATEGORIES = [
@@ -680,6 +725,84 @@ function loadState() {
     }
     return !!profile;
   } catch(e) { return false; }
+}
+
+const CUSTOM_TO_STANDARD = {
+  'custom_1780568319513': 'watermelon',
+  'custom_1780941614403': 'iceberg',
+  'custom_1780941824708': 'kohlrabi',
+  'custom_1780942629507': 'spring_onion',
+  'custom_1780433548068': 'geflugelsalami',
+  'custom_1780507364853': 'geflugel_wiener',
+  'custom_1780603745668': 'proteinpudding',
+  'custom_1780932362908': 'schinkenwuerfel',
+  'custom_1782807696977': 'puten_ministeaks',
+  'custom_1780589906620': 'linsenwaffeln',
+  'custom_1780603342257': 'flohsamenschalen',
+  'custom_1780929120032': 'gruene_linsen',
+  'custom_1783020558471': 'edamame_roasted',
+  'custom_1780511196799': 'saatenbrot',
+  'custom_1780590997866': 'dinkel',
+  'custom_1780602759558': 'buchweizen',
+  'custom_1780913674296': 'hafer',
+  'custom_1781524304531': 'bauernkruste',
+  'custom_1780418813480': 'mandelmilch',
+  'custom_1780505294522': 'grillkaese',
+  'custom_1781546315377': 'dattel_curry',
+  'custom_1781551347562': 'quarkcreme',
+  'custom_1781623031257': 'feta',
+  'custom_1782807828904': 'patros_leicht',
+  'custom_1780504683767': 'mandeln_geroestet',
+  'custom_1780505005420': 'mandeln_honig',
+  'custom_1780589583301': 'erdnussmus',
+  'custom_1780603512863': 'hanfsamen',
+  'custom_1780912834027': 'kuerbiskerne',
+  'custom_1780912976920': 'sonnenblumenkerne',
+  'custom_1783260879245': 'butter',
+  'custom_1780418939161': 'hohes_c',
+  'custom_1780421298386': 'datteln',
+  'custom_1780422691745': 'hollandaise',
+  'custom_1780434168657': 'nutella',
+  'custom_1780504276103': 'kinder_bueno',
+  'custom_1780925726963': 'schoki_70',
+  'custom_1781032980391': 'more_protein',
+  'custom_1781392656839': 'dessertsauce',
+  'custom_1781546546419': 'ahornsirup',
+  'custom_1782773394838': 'pb_balls',
+  'custom_1782807983843': 'granola_riegel',
+  'custom_1783267470251': 'milka_darkmilk',
+  'custom_1783259622408': 'bier_blanc',
+  'custom_1783260736200': 'erdinger_af',
+  'custom_1780433068024': 'nectarine',
+  'custom_1780568225805': 'strawberries',
+  'custom_1782817796401': 'blueberries',
+  'custom_1781202091281': 'raspberries',
+  'custom_1781111817261': 'fruchtmus',
+};
+
+function migrateCustomToStandard() {
+  let changed = false;
+  // Migrate plan entries
+  plan.forEach(p => {
+    if (CUSTOM_TO_STANDARD[p.foodId]) { p.foodId = CUSTOM_TO_STANDARD[p.foodId]; changed = true; }
+  });
+  // Migrate archived weeks
+  archivedWeeks.forEach(week => {
+    if (week.items) week.items.forEach(p => {
+      if (CUSTOM_TO_STANDARD[p.foodId]) { p.foodId = CUSTOM_TO_STANDARD[p.foodId]; changed = true; }
+    });
+  });
+  // Migrate recipe ingredients
+  recipes.forEach(r => {
+    if (r.ingredients) r.ingredients.forEach(ing => {
+      if (CUSTOM_TO_STANDARD[ing.foodId]) { ing.foodId = CUSTOM_TO_STANDARD[ing.foodId]; changed = true; }
+    });
+  });
+  // Remove migrated custom foods from foods array
+  const before = foods.length;
+  foods = foods.filter(f => !(f.custom && CUSTOM_TO_STANDARD[f.id]));
+  if (foods.length !== before) changed = true;
+  if (changed) saveState();
 }
 
 function saveState() {
@@ -1673,6 +1796,7 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 
 // ===== INIT =====
 const hasProfile = loadState();
+migrateCustomToStandard();
 if (hasProfile && profile) showMainApp();
 else showOnboarding();
 
