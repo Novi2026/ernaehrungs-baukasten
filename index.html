@@ -1576,4 +1576,100 @@ function saveRecipe() {
 
 function deleteRecipe(recipeId) {
   const r=getRecipe(recipeId);if(!r||!confirm(r.name+' löschen?'))return;
-  recipes=recipes.filter(rc=>rc.id!==recipeId);plan
+  recipes=recipes.filter(rc=>rc.id!==recipeId);plan=plan.filter(p=>p.recipeId!==recipeId);
+  expandedRecipe=null;showToast(r.name+' gelöscht');render();
+}
+
+// ===== ARCHIVE =====
+function openArchive(){renderArchiveList();document.getElementById('archiveOverlay').classList.add('open');}
+function closeArchive(){document.getElementById('archiveOverlay').classList.remove('open');}
+document.getElementById('archiveOverlay').addEventListener('click',function(e){if(e.target===this)closeArchive();});
+
+function renderArchiveList() {
+  if(archivedWeeks.length===0){document.getElementById('archiveList').innerHTML='<div class="plan-empty">Noch keine archivierten Wochen.</div>';return;}
+  document.getElementById('archiveList').innerHTML=archivedWeeks.map((week,wi)=>{
+    const d=new Date(week.date),ds=d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+    return '<div class="archive-week"><div class="archive-week-header" onclick="toggleArchiveWeek('+wi+')"><h4>'+ds+'</h4><span style="font-size:0.78rem;color:var(--text-light)">'+week.items.length+' Eintr. | '+week.cost.toFixed(2)+' EUR</span></div><div class="archive-week-body" id="awb-'+wi+'"><div class="archive-totals"><span>'+week.totals.kcal+' kcal</span><span>'+week.totals.p+'g E</span><span>'+week.totals.f+'g F</span><span>'+week.totals.c+'g KH</span></div><div style="margin-top:8px"><button class="header-btn" style="font-size:0.78rem;color:var(--primary);border-color:var(--primary)" onclick="restoreWeek('+wi+')">Wiederherstellen</button> <button class="header-btn" style="font-size:0.78rem;color:var(--danger);border-color:var(--danger)" onclick="deleteArchiveWeek('+wi+')">Löschen</button></div></div></div>';
+  }).join('');
+}
+function toggleArchiveWeek(wi){const b=document.getElementById('awb-'+wi);if(b)b.classList.toggle('open');}
+
+function restoreWeek(wi) {
+  const week=archivedWeeks[wi]; if(!week||!confirm('Wochenitems wiederherstellen?'))return;
+  let added=0;
+  week.items.filter(i=>!i.isBasis&&!i.recipeId).forEach(a=>{
+    const food=getFood(a.foodId); if(!food||plan.find(p=>p.foodId===a.foodId))return;
+    plan.push({foodId:a.foodId,portionG:a.portionG,servings:a.servings,isBasis:false}); added++;
+  });
+  closeArchive(); showToast(added+' Einträge wiederhergestellt'); render();
+}
+function deleteArchiveWeek(wi){if(!confirm('Löschen?'))return;archivedWeeks.splice(wi,1);saveState();renderArchiveList();}
+
+// ===== EXPORT / IMPORT =====
+function exportData() {
+  const data={profile,plan,customFoods:foods.filter(f=>f.custom),archivedWeeks,waterLog,planDays,recipes,pantry,exportDate:new Date().toISOString()};
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='pbe-export-'+new Date().toISOString().slice(0,10)+'.json'; a.click();
+  URL.revokeObjectURL(a.href); showToast('Exportiert!');
+}
+
+function importData(event) {
+  const file=event.target.files[0]; if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const d=JSON.parse(e.target.result);
+      if(d.profile)profile=d.profile; if(d.plan)plan=d.plan;
+      if(d.customFoods)d.customFoods.forEach(cf=>{const ex=foods.findIndex(f=>f.id===cf.id);if(ex>=0)foods[ex]=cf;else foods.push(cf);});
+      if(d.archivedWeeks)archivedWeeks=d.archivedWeeks; if(d.waterLog)waterLog=d.waterLog;
+      if(d.planDays)planDays=d.planDays; if(d.recipes)recipes=d.recipes; if(d.pantry)pantry=d.pantry;
+      showToast('Importiert!'); saveState(); render();
+    }catch(err){alert('Fehler: '+err.message);}
+  };
+  reader.readAsText(file); event.target.value='';
+}
+
+function resetAllData(){if(!confirm('ALLE Daten zurücksetzen?'))return;localStorage.removeItem('pbe_state');location.reload();}
+function restoreDeleted(){if(deletedFoods.size===0){showToast('Keine gelöschten');return;}if(!confirm(deletedFoods.size+' wiederherstellen?'))return;deletedFoods.clear();showToast('Wiederhergestellt!');render();}
+
+// ===== MIGRATION =====
+function checkMigration() {
+  try{
+    const old=localStorage.getItem('eb_state');
+    if(old&&!localStorage.getItem('pbe_migrated')){
+      document.getElementById('migrateBanner').innerHTML='<div class="migrate-banner"><h3>Alte Daten gefunden</h3><p>Daten aus der vorherigen Version übernehmen?</p><div class="migrate-banner-actions"><button style="background:var(--primary);color:#fff" onclick="migrateOld()">Ja, übernehmen</button><button style="background:var(--bg);color:var(--text-light)" onclick="dismissMigrate()">Nein</button></div></div>';
+    }
+  }catch(e){}
+}
+
+function migrateOld() {
+  try{
+    const d=JSON.parse(localStorage.getItem('eb_state'));
+    if(d.plan)plan=d.plan; if(d.customFoods)d.customFoods.forEach(cf=>{if(!foods.find(f=>f.id===cf.id))foods.push(cf);});
+    if(d.archivedWeeks)archivedWeeks=d.archivedWeeks; if(d.waterLog)waterLog=d.waterLog;
+    if(d.planDays)planDays=d.planDays; if(d.recipes)recipes=d.recipes;
+    if(d.foodMods)Object.entries(d.foodMods).forEach(([id,mods])=>{const f=foods.find(x=>x.id===id);if(f)Object.assign(f,mods);});
+    localStorage.setItem('pbe_migrated','1');
+    showToast('Daten übernommen!'); document.getElementById('migrateBanner').innerHTML=''; render();
+  }catch(e){showToast('Fehler bei Migration');}
+}
+function dismissMigrate(){localStorage.setItem('pbe_migrated','1');document.getElementById('migrateBanner').innerHTML='';}
+
+// ===== HELPERS =====
+function formatPrice(price,prRef){
+  if(prRef===1000)return price.toFixed(2)+' EUR/kg';
+  if(prRef<=80)return price.toFixed(2)+' EUR/Stk';
+  return price.toFixed(2)+' EUR/'+prRef+'g';
+}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800);}
+
+// ===== INIT =====
+const hasProfile = loadState();
+if (hasProfile && profile) showMainApp();
+else showOnboarding();
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
