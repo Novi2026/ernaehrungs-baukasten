@@ -1463,15 +1463,16 @@ function renderShopping() {
   document.getElementById('budgetBadge').textContent = total.toFixed(2)+' / '+budget.toFixed(0)+' EUR';
   if (allItems.length===0) { document.getElementById('shopContent').innerHTML='<div class="shop-empty">Füge Lebensmittel zum Plan hinzu.</div>'; return; }
 
-  // Split into open and bought
+  // Split into open and bought — always gram-based comparison
   var openItems=[], boughtItems=[];
   function splitItems(items, prefix) {
     items.forEach(function(item) {
       var key=prefix?prefix+item.foodId:item.foodId;
       var b=boughtShop[key];
-      if (b && b.boughtG>=item.totalG) {
+      if (!b) { openItems.push({item:item,key:key}); return; }
+      if (b.boughtG>=item.totalG) {
         boughtItems.push({item:item,key:key,boughtG:b.boughtG,boughtPieces:b.boughtPieces});
-      } else if (b && b.boughtG>0) {
+      } else if (b.boughtG>0) {
         var remainG=item.totalG-b.boughtG;
         var remainCost=(remainG/item.totalG)*item.cost;
         openItems.push({item:{foodId:item.foodId,name:item.name,totalG:remainG,cost:remainCost,cat:item.cat},key:key,partial:true});
@@ -1543,7 +1544,12 @@ function confirmBuy(key, foodId, totalG, mode) {
   var val=parseInt(document.getElementById('buyInput').value)||1;
   var food=getFood(foodId);
   var addG, addPieces=null;
-  if (mode==='stueck'&&food.pieceWeight) { addPieces=val; addG=val*food.pieceWeight; }
+  if (mode==='stueck'&&food.pieceWeight) {
+    addPieces=val;
+    // Use planned portion size, not default pieceWeight
+    var defPieces=Math.ceil(totalG/food.pieceWeight);
+    addG=defPieces>0?Math.round(totalG*val/defPieces):val*food.pieceWeight;
+  }
   else { addG=val; }
   var existing=boughtShop[key];
   if (existing) { existing.boughtG+=addG; if(addPieces) existing.boughtPieces=(existing.boughtPieces||0)+addPieces; }
