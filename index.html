@@ -722,7 +722,7 @@ const CATEGORIES = [
 let profile = null;
 let foods = [...FOODS_BASE];
 let plan = [];
-let checkedShop = new Set();
+let boughtShop = {}; // {key: {foodId, boughtG, boughtPieces}}
 let activeCat = 'all';
 let expandedFood = null;
 let expandedRecipe = null;
@@ -732,6 +732,7 @@ let waterLog = {};
 let planDays = 7;
 let recipes = [];
 let pantry = [];
+let consumedPantry = [];
 let editingFoodId = null;
 let editingRecipeId = null;
 let recipeIngRows = [];
@@ -748,7 +749,9 @@ function loadState() {
     const d = JSON.parse(s);
     if (d.profile) profile = d.profile;
     if (d.plan) plan = d.plan;
-    if (d.checkedShop) checkedShop = new Set(d.checkedShop);
+    if (d.boughtShop) boughtShop = d.boughtShop;
+    else if (d.checkedShop) { d.checkedShop.forEach(function(k){ boughtShop[k]={foodId:k,boughtG:0,boughtPieces:null}; }); }
+    if (d.consumedPantry) consumedPantry = d.consumedPantry;
     if (d.customFoods) d.customFoods.forEach(cf => { if (!foods.find(f=>f.id===cf.id)) foods.push(cf); });
     if (d.deletedFoods) deletedFoods = new Set(d.deletedFoods);
     if (d.archivedWeeks) archivedWeeks = d.archivedWeeks;
@@ -859,8 +862,8 @@ function saveState() {
       if (Object.keys(mods).length > 0) foodMods[f.id] = mods;
     });
     localStorage.setItem('pbe_state', JSON.stringify({
-      profile, plan, checkedShop:[...checkedShop], customFoods, foodMods,
-      deletedFoods:[...deletedFoods], archivedWeeks, waterLog, planDays, recipes, pantry
+      profile, plan, boughtShop, customFoods, foodMods,
+      deletedFoods:[...deletedFoods], archivedWeeks, waterLog, planDays, recipes, pantry, consumedPantry
     }));
   } catch(e) {}
 }
@@ -1454,50 +1457,115 @@ function renderPlanItems(items) {
 function renderShopping() {
   const {basis,weekly,recipeGroups} = shoppingList();
   const allItems = [...basis,...weekly];
-  const recipeCost = recipeGroups.reduce((s,g)=>s+g.items.reduce((s2,i)=>s2+i.cost,0),0);
-  const total = allItems.reduce((s,item)=>s+item.cost,0) + recipeCost;
+  recipeGroups.forEach(function(g){g.items.forEach(function(i){allItems.push(i);});});
+  const total = allItems.reduce((s,item)=>s+item.cost,0);
   const budget = profile ? profile.budget : 60;
   document.getElementById('budgetBadge').textContent = total.toFixed(2)+' / '+budget.toFixed(0)+' EUR';
-  if (allItems.length===0&&recipeGroups.length===0) { document.getElementById('shopContent').innerHTML='<div class="shop-empty">Füge Lebensmittel zum Plan hinzu.</div>'; return; }
-  let h='<div class="shop-grid">';
-  if (basis.length>0) { h+='<div class="shop-section-title">Basis</div>'; h+=basis.map(i=>shopItemHTML(i)).join(''); }
-  if (weekly.length>0) { h+='<div class="shop-section-title">Diese Woche</div>'; h+=weekly.map(i=>shopItemHTML(i)).join(''); }
-  recipeGroups.forEach(g => { h+='<div class="shop-section-title">'+g.name+' (Rezept)</div>'; h+=g.items.map(i=>shopItemHTML(i,'rg_'+g.name+'_'+i.foodId)).join(''); });
+  if (allItems.length===0) { document.getElementById('shopContent').innerHTML='<div class="shop-empty">Füge Lebensmittel zum Plan hinzu.</div>'; return; }
+
+  // Split into open and bought
+  var openItems=[], boughtItems=[];
+  function splitItems(items, prefix) {
+    items.forEach(function(item) {
+      var key=prefix?prefix+item.foodId:item.foodId;
+      var b=boughtShop[key];
+      if (b && b.boughtG>=item.totalG) {
+        boughtItems.push({item:item,key:key,boughtG:b.boughtG,boughtPieces:b.boughtPieces});
+      } else if (b && b.boughtG>0) {
+        var remainG=item.totalG-b.boughtG;
+        var remainCost=(remainG/item.totalG)*item.cost;
+        openItems.push({item:{foodId:item.foodId,name:item.name,totalG:remainG,cost:remainCost,cat:item.cat},key:key,partial:true});
+        boughtItems.push({item:item,key:key,boughtG:b.boughtG,boughtPieces:b.boughtPieces,partial:true});
+      } else {
+        openItems.push({item:item,key:key});
+      }
+    });
+  }
+  splitItems(basis,'');
+  splitItems(weekly,'');
+  recipeGroups.forEach(function(g){splitItems(g.items,'rg_'+g.name+'_');});
+
+  var h='<div class="shop-grid">';
+  if (openItems.length>0) {
+    h+='<div class="shop-section-title">Noch kaufen</div>';
+    openItems.forEach(function(o){ h+=shopItemOpenHTML(o.item,o.key); });
+  }
+  if (boughtItems.length>0) {
+    h+='<div class="shop-section-title" style="color:var(--primary)">Gekauft</div>';
+    boughtItems.forEach(function(o){ h+=shopItemBoughtHTML(o); });
+  }
   h+='</div>';
   document.getElementById('shopContent').innerHTML=h;
 }
 
-function shopItemHTML(item, keyOverride) {
-  const key=keyOverride||item.foodId, checked=checkedShop.has(key), food=getFood(item.foodId);
-  const isStueck = food&&food.unit==='stueck'&&food.pieceWeight;
-  let qd;
-  if (isStueck) { qd=Math.ceil(item.totalG/food.pieceWeight)+' Stück (~'+item.totalG+'g)'; }
-  else if (item.totalG>=1000) { qd=(item.totalG/1000).toFixed(1)+(food&&food.unit==='ml'?' L':' kg'); }
-  else { qd=item.totalG+(food&&food.unit==='ml'?'ml':'g'); }
-  return '<div class="shop-item'+(checked?' checked':'')+'"><input type="checkbox" '+(checked?'checked':'')+' onchange="onShopCheck(\''+key+'\',\''+item.foodId+'\','+item.totalG+')"><div class="shop-item-info"><div class="shop-name">'+item.name+'</div><div class="shop-qty">'+qd+'</div></div><div class="shop-price">'+item.cost.toFixed(2)+' EUR</div></div>';
+function shopQtyDisplay(totalG, food) {
+  var isStueck=food&&food.unit==='stueck'&&food.pieceWeight;
+  if (isStueck) return Math.ceil(totalG/food.pieceWeight)+' Stück (~'+Math.round(totalG)+'g)';
+  if (totalG>=1000) return (totalG/1000).toFixed(1)+(food&&food.unit==='ml'?' L':' kg');
+  return Math.round(totalG)+(food&&food.unit==='ml'?'ml':'g');
 }
 
-function onShopCheck(key, foodId, totalG) {
-  if (checkedShop.has(key)) { checkedShop.delete(key); renderShopping(); saveState(); return; }
-  const food=getFood(foodId);
-  if (food&&food.unit==='stueck'&&food.pieceWeight) { showPiecePopup(key,foodId,Math.ceil(totalG/food.pieceWeight),totalG); }
-  else { checkedShop.add(key); addToPantry(foodId,totalG,null); renderShopping(); renderPantry(); saveState(); }
+function shopItemOpenHTML(item, key) {
+  var food=getFood(item.foodId);
+  return '<div class="shop-item"><div class="shop-item-info"><div class="shop-name">'+item.name+'</div><div class="shop-qty">'+shopQtyDisplay(item.totalG,food)+'</div></div><div class="shop-price">'+item.cost.toFixed(2)+' EUR</div><button class="header-btn" style="font-size:0.75rem;padding:4px 10px;color:var(--primary);border-color:var(--primary)" onclick="buyItem(\''+key+'\',\''+item.foodId+'\','+item.totalG+')">Kaufen</button></div>';
 }
 
-function showPiecePopup(key, foodId, defPieces, totalG) {
-  const food=getFood(foodId), ov=document.createElement('div');
+function shopItemBoughtHTML(o) {
+  var food=getFood(o.item.foodId);
+  var boughtDisplay=shopQtyDisplay(o.boughtG,food);
+  return '<div class="shop-item checked"><div class="shop-item-info"><div class="shop-name">'+o.item.name+'</div><div class="shop-qty">'+boughtDisplay+' gekauft</div></div><button class="header-btn" style="font-size:0.72rem;padding:3px 8px;color:var(--danger);border-color:var(--danger)" onclick="unbuyItem(\''+o.key+'\',\''+o.item.foodId+'\','+o.boughtG+','+(o.boughtPieces||'null')+')">Zurück</button></div>';
+}
+
+function buyItem(key, foodId, totalG) {
+  var food=getFood(foodId);
+  if (food&&food.unit==='stueck'&&food.pieceWeight) {
+    showBuyPopup(key,foodId,totalG,'stueck');
+  } else {
+    showBuyPopup(key,foodId,totalG,'gram');
+  }
+}
+
+function showBuyPopup(key, foodId, totalG, mode) {
+  var food=getFood(foodId), ov=document.createElement('div');
   ov.className='piece-popup-overlay';
-  ov.innerHTML='<div class="piece-popup"><h3>'+food.n+' - Wie viele Stück?</h3><div class="stepper" style="justify-content:center;margin:0 auto 16px;display:inline-flex"><button onclick="stepVal(\'pieceInput\',-1,1)">-</button><input type="number" id="pieceInput" value="'+defPieces+'" min="1" max="99"><button onclick="stepVal(\'pieceInput\',1,1)">+</button></div><div style="display:flex;gap:8px"><button class="btn-cancel" style="flex:1;padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;background:var(--bg);color:var(--text-light)" onclick="this.closest(\'.piece-popup-overlay\').remove()">Abbrechen</button><button class="btn-save" style="flex:1;padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;background:var(--primary);color:#fff" onclick="confirmPiece(\''+key+'\',\''+foodId+'\','+totalG+')">Zum Vorrat</button></div></div>';
+  var existing=boughtShop[key]?boughtShop[key].boughtG:0;
+  var remainG=totalG-existing;
+  var isStueck=mode==='stueck';
+  var defVal=isStueck?Math.ceil(remainG/food.pieceWeight):Math.round(remainG);
+  var unit=isStueck?'Stück':(food.unit==='ml'?'ml':'g');
+  var label=isStueck?'Wie viele '+unit+'?':'Wie viel '+unit+'?';
+  ov.innerHTML='<div class="piece-popup"><h3>'+food.n+' kaufen</h3><p style="font-size:0.82rem;color:var(--text-light);margin-bottom:12px">Gesamt benötigt: '+shopQtyDisplay(totalG,food)+'</p><label style="font-size:0.82rem;font-weight:600;margin-bottom:4px;display:block">'+label+'</label><div class="stepper" style="justify-content:center;margin:0 auto 16px;display:inline-flex"><button onclick="stepVal(\'buyInput\',-1,1)">-</button><input type="number" id="buyInput" value="'+defVal+'" min="1" max="999"><button onclick="stepVal(\'buyInput\',1,1)">+</button></div><div style="display:flex;gap:8px"><button class="btn-cancel" style="flex:1;padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;background:var(--bg);color:var(--text-light)" onclick="this.closest(\'.piece-popup-overlay\').remove()">Abbrechen</button><button class="btn-save" style="flex:1;padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;background:var(--primary);color:#fff" onclick="confirmBuy(\''+key+'\',\''+foodId+'\','+totalG+',\''+mode+'\')">Gekauft</button></div></div>';
   document.body.appendChild(ov);
   ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
 }
 
-function confirmPiece(key,foodId,totalG) {
-  const pieces=parseInt(document.getElementById('pieceInput').value)||1;
-  const food=getFood(foodId), amtG=food.pieceWeight?pieces*food.pieceWeight:totalG;
-  checkedShop.add(key); addToPantry(foodId,amtG,pieces);
+function confirmBuy(key, foodId, totalG, mode) {
+  var val=parseInt(document.getElementById('buyInput').value)||1;
+  var food=getFood(foodId);
+  var addG, addPieces=null;
+  if (mode==='stueck'&&food.pieceWeight) { addPieces=val; addG=val*food.pieceWeight; }
+  else { addG=val; }
+  var existing=boughtShop[key];
+  if (existing) { existing.boughtG+=addG; if(addPieces) existing.boughtPieces=(existing.boughtPieces||0)+addPieces; }
+  else { boughtShop[key]={foodId:foodId,boughtG:addG,boughtPieces:addPieces}; }
+  addToPantry(foodId,addG,addPieces);
   document.querySelector('.piece-popup-overlay')?.remove();
   renderShopping(); renderPantry(); saveState();
+}
+
+function unbuyItem(key, foodId, boughtG, boughtPieces) {
+  // Remove from pantry
+  var pe=pantry.find(function(p){return p.foodId===foodId;});
+  if (pe) {
+    pe.amountG=Math.max(0,pe.amountG-boughtG);
+    if (boughtPieces&&pe.pieces) pe.pieces=Math.max(0,pe.pieces-boughtPieces);
+    pe.originalAmountG=Math.max(0,pe.originalAmountG-boughtG);
+    if (boughtPieces&&pe.originalPieces) pe.originalPieces=Math.max(0,pe.originalPieces-boughtPieces);
+    if (pe.amountG<=0) pantry.splice(pantry.indexOf(pe),1);
+  }
+  delete boughtShop[key];
+  renderShopping(); renderPantry(); saveState();
+  showToast('Zurück auf die Liste');
 }
 
 // ===== PANTRY =====
@@ -1507,32 +1575,51 @@ function addToPantry(foodId,amountG,pieces) {
   else { pantry.push({foodId,amountG,pieces:pieces||null,addedDate:new Date().toISOString(),originalAmountG:amountG,originalPieces:pieces||null}); }
 }
 
+function pantryAmountDisplay(item,food) {
+  if (food.unit==='stueck'&&item.pieces!==null) return item.pieces+' Stück (~'+Math.round(item.amountG)+'g)';
+  if (food.unit==='ml') return item.amountG>=1000?(item.amountG/1000).toFixed(1)+' L':Math.round(item.amountG)+'ml';
+  return item.amountG>=1000?(item.amountG/1000).toFixed(1)+' kg':Math.round(item.amountG)+'g';
+}
+
 function renderPantry() {
-  if (pantry.length===0) { document.getElementById('pantryContent').innerHTML='<div class="pantry-empty">Dein Vorrat ist leer.<br>Hake Einkaufsposten ab, um sie hier zu sehen.</div>'; document.getElementById('pantrySummary').innerHTML=''; return; }
+  if (pantry.length===0&&consumedPantry.length===0) { document.getElementById('pantryContent').innerHTML='<div class="pantry-empty">Dein Vorrat ist leer.<br>Kaufe Lebensmittel ein, um sie hier zu sehen.</div>'; document.getElementById('pantrySummary').innerHTML=''; return; }
   let h='<div class="pantry-section">';
-  pantry.forEach((item,idx) => {
-    const food=getFood(item.foodId); if(!food) return;
-    const pct=item.originalAmountG>0?(item.amountG/item.originalAmountG*100):0;
-    const bc = pct>30?'':pct>10?' low':' empty';
-    let ad;
-    if (food.unit==='stueck'&&item.pieces!==null) ad=item.pieces+' Stück (~'+Math.round(item.amountG)+'g)';
-    else if (food.unit==='ml') ad=item.amountG>=1000?(item.amountG/1000).toFixed(1)+' L':Math.round(item.amountG)+'ml';
-    else ad=item.amountG>=1000?(item.amountG/1000).toFixed(1)+' kg':Math.round(item.amountG)+'g';
-    h+='<div class="pantry-item"><div class="pantry-item-info"><h4>'+food.n+'</h4><span class="pantry-amount">'+ad+'</span><div class="pantry-bar"><div class="pantry-bar-fill'+bc+'" style="width:'+Math.max(pct,2)+'%"></div></div></div><div class="pantry-actions">';
-    if (food.unit==='stueck'&&item.pieces) h+='<button onclick="usePiece('+idx+')">-1 St.</button>';
-    h+='<button onclick="usePartial('+idx+')">Teilweise</button>';
-    h+='<button onclick="removePantry('+idx+')" style="color:var(--danger)">Alles</button></div></div>';
-  });
+  if (pantry.length>0) {
+    pantry.forEach((item,idx) => {
+      const food=getFood(item.foodId); if(!food) return;
+      const pct=item.originalAmountG>0?(item.amountG/item.originalAmountG*100):0;
+      const bc = pct>30?'':pct>10?' low':' empty';
+      h+='<div class="pantry-item"><div class="pantry-item-info"><h4>'+food.n+'</h4><span class="pantry-amount">'+pantryAmountDisplay(item,food)+'</span><div class="pantry-bar"><div class="pantry-bar-fill'+bc+'" style="width:'+Math.max(pct,2)+'%"></div></div></div><div class="pantry-actions">';
+      if (food.unit==='stueck'&&item.pieces) h+='<button onclick="usePiece('+idx+')">-1 St.</button>';
+      h+='<button onclick="usePartial('+idx+')">Teilweise</button>';
+      h+='<button onclick="consumeAll('+idx+')" style="color:var(--accent)">Verbraucht</button></div></div>';
+    });
+  } else {
+    h+='<div style="text-align:center;padding:16px;color:var(--text-muted);font-size:0.85rem">Alles verbraucht!</div>';
+  }
+  if (consumedPantry.length>0) {
+    h+='<div style="margin-top:16px;padding-top:12px;border-top:2px solid var(--border)"><div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-muted);margin-bottom:8px">Verbraucht</div>';
+    consumedPantry.forEach(function(item,idx) {
+      var food=getFood(item.foodId); if(!food) return;
+      h+='<div class="pantry-item" style="opacity:0.5"><div class="pantry-item-info"><h4>'+food.n+'</h4><span class="pantry-amount">'+pantryAmountDisplay(item,food)+' verbraucht</span></div><div class="pantry-actions"><button onclick="restoreConsumed('+idx+')" style="font-size:0.72rem">Zurück</button><button onclick="removeConsumed('+idx+')" style="color:var(--danger);font-size:0.72rem">&#10005;</button></div></div>';
+    });
+    h+='</div>';
+  }
   h+='</div>';
   document.getElementById('pantryContent').innerHTML=h;
-  document.getElementById('pantrySummary').innerHTML='<div class="pantry-summary"><span><strong>'+pantry.length+'</strong> Posten</span><span>~<strong>'+Math.round(pantry.reduce((s,p)=>s+p.amountG,0)/1000)+'</strong> kg gesamt</span></div>';
+  document.getElementById('pantrySummary').innerHTML='<div class="pantry-summary"><span><strong>'+pantry.length+'</strong> im Vorrat</span><span>~<strong>'+Math.round(pantry.reduce((s,p)=>s+p.amountG,0)/1000)+'</strong> kg</span>'+(consumedPantry.length>0?'<span><strong>'+consumedPantry.length+'</strong> verbraucht</span>':'')+'</div>';
+}
+
+function moveToPantryConsumed(idx) {
+  var item=pantry.splice(idx,1)[0];
+  if (item) consumedPantry.push({foodId:item.foodId,amountG:item.originalAmountG,pieces:item.originalPieces,consumedDate:new Date().toISOString()});
 }
 
 function usePiece(idx) {
   const item=pantry[idx]; if(!item) return;
   const food=getFood(item.foodId);
   if (item.pieces&&item.pieces>1) { item.pieces--; item.amountG=food.pieceWeight?item.pieces*food.pieceWeight:Math.max(0,item.amountG-(food.pieceWeight||100)); }
-  else pantry.splice(idx,1);
+  else { moveToPantryConsumed(idx); }
   renderPantry(); saveState();
 }
 
@@ -1543,11 +1630,19 @@ function usePartial(idx) {
   if (amount===null) return;
   item.amountG=Math.max(0,item.amountG-(parseFloat(amount)||0));
   if (food.unit==='stueck'&&food.pieceWeight&&item.pieces) item.pieces=Math.max(0,Math.round(item.amountG/food.pieceWeight));
-  if (item.amountG<=0) pantry.splice(idx,1);
+  if (item.amountG<=0) { moveToPantryConsumed(idx); }
   renderPantry(); saveState();
 }
 
-function removePantry(idx) { pantry.splice(idx,1); renderPantry(); saveState(); showToast('Aus Vorrat entfernt'); }
+function consumeAll(idx) { moveToPantryConsumed(idx); renderPantry(); saveState(); showToast('Als verbraucht markiert'); }
+
+function restoreConsumed(idx) {
+  var item=consumedPantry.splice(idx,1)[0]; if(!item) return;
+  addToPantry(item.foodId,item.amountG,item.pieces);
+  renderPantry(); saveState(); showToast('Zurück in den Vorrat');
+}
+
+function removeConsumed(idx) { consumedPantry.splice(idx,1); renderPantry(); saveState(); }
 
 // ===== RECIPES TAB =====
 function renderRecipes() {
@@ -1709,7 +1804,7 @@ function startNewWeek() {
     archivedWeeks.unshift({date:new Date().toISOString(),days:planDays,items,totals:{kcal:Math.round(t.kcal),p:Math.round(t.p),f:Math.round(t.f),c:Math.round(t.c),fb:Math.round(t.fb)},cost:Math.round(cost*100)/100});
     if(archivedWeeks.length>52) archivedWeeks=archivedWeeks.slice(0,52);
   }
-  plan=plan.filter(p=>p.isBasis); checkedShop.clear(); waterLog={}; planDays=7;
+  plan=plan.filter(p=>p.isBasis); boughtShop={}; consumedPantry=[]; waterLog={}; planDays=7;
   showToast('Neue Woche gestartet!'); render();
 }
 
@@ -1863,7 +1958,7 @@ function deleteArchiveWeek(wi){if(!confirm('Löschen?'))return;archivedWeeks.spl
 
 // ===== EXPORT / IMPORT =====
 function exportData() {
-  const data={profile,plan,customFoods:foods.filter(f=>f.custom),archivedWeeks,waterLog,planDays,recipes,pantry,exportDate:new Date().toISOString()};
+  const data={profile,plan,boughtShop,customFoods:foods.filter(f=>f.custom),archivedWeeks,waterLog,planDays,recipes,pantry,consumedPantry,exportDate:new Date().toISOString()};
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
   a.download='pbe-export-'+new Date().toISOString().slice(0,10)+'.json'; a.click();
@@ -1880,6 +1975,7 @@ function importData(event) {
       if(d.customFoods)d.customFoods.forEach(cf=>{const ex=foods.findIndex(f=>f.id===cf.id);if(ex>=0)foods[ex]=cf;else foods.push(cf);});
       if(d.archivedWeeks)archivedWeeks=d.archivedWeeks; if(d.waterLog)waterLog=d.waterLog;
       if(d.planDays)planDays=d.planDays; if(d.recipes)recipes=d.recipes; if(d.pantry)pantry=d.pantry;
+      if(d.boughtShop)boughtShop=d.boughtShop; if(d.consumedPantry)consumedPantry=d.consumedPantry;
       showToast('Importiert!'); saveState(); render();
     }catch(err){alert('Fehler: '+err.message);}
   };
