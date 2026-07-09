@@ -282,8 +282,8 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .recipe-cat-filters::-webkit-scrollbar{display:none}
 .recipe-cat-btn{padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);font-size:0.78rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s}
 .recipe-cat-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
-.recipe-img{width:100%;height:120px;border-radius:10px 10px 0 0;object-fit:cover;display:block}
-.recipe-img-placeholder{width:100%;height:80px;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:center;font-size:2.2rem;background:linear-gradient(135deg,var(--primary-light),var(--bg))}
+.recipe-img{width:100%;height:160px;border-radius:10px 10px 0 0;object-fit:cover;display:block}
+.recipe-img-placeholder{width:100%;height:100px;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:center;font-size:2.2rem;background:linear-gradient(135deg,var(--primary-light),var(--bg))}
 .recipe-card-with-img{overflow:hidden}
 .recipe-card-with-img .recipe-main{border-radius:0}
 .recipe-totals{display:flex;gap:8px;flex-wrap:wrap;padding:8px 10px;background:var(--card);border-radius:8px;font-size:0.78rem;color:var(--text-light);margin-bottom:8px}
@@ -756,41 +756,41 @@ const RECIPE_CATEGORIES = [
 ];
 
 const RECIPE_TEMPLATES = [
-  {name:'Gemüsepfanne',cat:'pfanne',img:'rezeptbilder/gemuesepfanne.jpg',totalPortions:4,ingredients:[
-    {foodId:'chicken',amountG:400,rolle:'protein'},{foodId:'bellpepper',amountG:200,rolle:'veg'},
-    {foodId:'zucchini',amountG:200,rolle:'veg'},{foodId:'rice',amountG:320,rolle:'beilage'},
-    {foodId:'olive_oil',amountG:15,rolle:'extras'}
-  ],notizen:'Gemüse knackig anbraten, Reis separat kochen.'},
-  {name:'Pasta mit Sauce',cat:'pasta',img:'rezeptbilder/pasta.jpg',totalPortions:4,ingredients:[
-    {foodId:'beef',amountG:300,rolle:'protein'},{foodId:'tomato',amountG:300,rolle:'veg'},
-    {foodId:'bellpepper',amountG:150,rolle:'veg'},{foodId:'pasta',amountG:320,rolle:'beilage'},
-    {foodId:'olive_oil',amountG:15,rolle:'extras'}
-  ],notizen:'Hack anbraten, Gemüse dazu, mit Tomaten köcheln.'},
-  {name:'Buddha Bowl',cat:'bowl',img:'rezeptbilder/buddha-bowl.jpg',totalPortions:2,ingredients:[
-    {foodId:'tofu',amountG:200,rolle:'protein'},{foodId:'spinach',amountG:100,rolle:'veg'},
-    {foodId:'carrot',amountG:100,rolle:'veg'},{foodId:'avocado',amountG:75,rolle:'veg'},
-    {foodId:'quinoa',amountG:120,rolle:'beilage'},{foodId:'olive_oil',amountG:10,rolle:'extras'}
-  ],notizen:'Quinoa kochen, Tofu anbraten, alles in Bowl anrichten.'},
-  {name:'Salat mit Protein',cat:'salat',img:'rezeptbilder/salat.jpg',totalPortions:2,ingredients:[
-    {foodId:'chicken',amountG:250,rolle:'protein'},{foodId:'iceberg',amountG:200,rolle:'veg'},
-    {foodId:'tomato',amountG:150,rolle:'veg'},{foodId:'cucumber',amountG:100,rolle:'veg'},
-    {foodId:'feta',amountG:60,rolle:'extras'},{foodId:'olive_oil',amountG:15,rolle:'extras'}
-  ],notizen:'Hähnchen braten, Salat anrichten, Dressing drüber.'},
-  {name:'Ofengemüse mit Beilage',cat:'ofen',img:'rezeptbilder/ofengemuese.jpg',totalPortions:4,ingredients:[
-    {foodId:'chicken',amountG:400,rolle:'protein'},{foodId:'sweetpotato',amountG:400,rolle:'veg'},
-    {foodId:'broccoli',amountG:300,rolle:'veg'},{foodId:'bellpepper',amountG:200,rolle:'veg'},
-    {foodId:'olive_oil',amountG:20,rolle:'extras'}
-  ],notizen:'Alles würzen, bei 200°C ca. 25 Min. im Ofen.'},
-  {name:'Eintopf / Suppe',cat:'suppe',img:'rezeptbilder/eintopf.jpg',totalPortions:6,ingredients:[
-    {foodId:'red_lentils',amountG:200,rolle:'protein'},{foodId:'carrot',amountG:200,rolle:'veg'},
-    {foodId:'zucchini',amountG:200,rolle:'veg'},{foodId:'potato',amountG:300,rolle:'beilage'},
-    {foodId:'olive_oil',amountG:15,rolle:'extras'}
-  ],notizen:'Alles in Topf, mit Brühe aufgießen, 20 Min. köcheln.'},
-  {name:'Wrap / Tortilla',cat:'wrap',img:'rezeptbilder/wrap.jpg',totalPortions:4,ingredients:[
-    {foodId:'chicken',amountG:300,rolle:'protein'},{foodId:'iceberg',amountG:100,rolle:'veg'},
-    {foodId:'tomato',amountG:150,rolle:'veg'},{foodId:'bellpepper',amountG:100,rolle:'veg'},
-    {foodId:'gouda',amountG:60,rolle:'extras'}
-  ],notizen:'Hähnchen braten, alles in Tortilla wickeln.'}
+  {name:'Gemüsepfanne',cat:'pfanne',img:'rezeptbilder/gemuesepfanne.jpg',totalPortions:1,ingredients:[
+    {foodId:'chicken',amountG:150,rolle:'protein'},{foodId:'bellpepper',amountG:80,rolle:'veg'},
+    {foodId:'zucchini',amountG:100,rolle:'veg'},{foodId:'rice',amountG:75,rolle:'beilage'},
+    {foodId:'olive_oil',amountG:8,rolle:'extras'}
+  ],notizen:'Reis kochen. Hähnchen in Streifen schneiden, scharf anbraten. Gemüse dazu, 3-4 Min. knackig braten. Mit Reis servieren.'},
+  {name:'Pasta mit Sauce',cat:'pasta',img:'rezeptbilder/pasta.jpg',totalPortions:1,ingredients:[
+    {foodId:'beef',amountG:120,rolle:'protein'},{foodId:'tomato',amountG:150,rolle:'veg'},
+    {foodId:'bellpepper',amountG:60,rolle:'veg'},{foodId:'pasta',amountG:80,rolle:'beilage'},
+    {foodId:'olive_oil',amountG:8,rolle:'extras'}
+  ],notizen:'Pasta kochen. Hack krümelig anbraten, Paprika dazu, Tomaten aufgießen, 10 Min. köcheln. Abschmecken, über die Pasta geben.'},
+  {name:'Buddha Bowl',cat:'bowl',img:'rezeptbilder/buddha-bowl.jpg',totalPortions:1,ingredients:[
+    {foodId:'tofu',amountG:120,rolle:'protein'},{foodId:'spinach',amountG:50,rolle:'veg'},
+    {foodId:'carrot',amountG:60,rolle:'veg'},{foodId:'avocado',amountG:40,rolle:'veg'},
+    {foodId:'quinoa',amountG:60,rolle:'beilage'},{foodId:'olive_oil',amountG:5,rolle:'extras'}
+  ],notizen:'Quinoa kochen. Tofu würfeln und knusprig anbraten. Karotte raspeln, Avocado in Scheiben. Alles in einer Bowl anrichten, Spinat als Bett.'},
+  {name:'Salat mit Protein',cat:'salat',img:'rezeptbilder/salat.jpg',totalPortions:1,ingredients:[
+    {foodId:'chicken',amountG:150,rolle:'protein'},{foodId:'iceberg',amountG:100,rolle:'veg'},
+    {foodId:'tomato',amountG:80,rolle:'veg'},{foodId:'cucumber',amountG:60,rolle:'veg'},
+    {foodId:'feta',amountG:30,rolle:'extras'},{foodId:'olive_oil',amountG:10,rolle:'extras'}
+  ],notizen:'Hähnchen würzen und in der Pfanne braten, in Streifen schneiden. Salat, Tomaten und Gurke anrichten. Feta darüber bröseln, mit Olivenöl beträufeln.'},
+  {name:'Ofengemüse mit Beilage',cat:'ofen',img:'rezeptbilder/ofengemuese.jpg',totalPortions:1,ingredients:[
+    {foodId:'chicken',amountG:150,rolle:'protein'},{foodId:'sweetpotato',amountG:150,rolle:'veg'},
+    {foodId:'broccoli',amountG:100,rolle:'veg'},{foodId:'bellpepper',amountG:80,rolle:'veg'},
+    {foodId:'olive_oil',amountG:10,rolle:'extras'}
+  ],notizen:'Ofen auf 200°C vorheizen. Gemüse und Hähnchen würfeln, mit Öl und Gewürzen mischen. Auf Backblech verteilen, 25 Min. backen bis goldbraun.'},
+  {name:'Eintopf / Suppe',cat:'suppe',img:'rezeptbilder/eintopf.jpg',totalPortions:1,ingredients:[
+    {foodId:'red_lentils',amountG:50,rolle:'protein'},{foodId:'carrot',amountG:80,rolle:'veg'},
+    {foodId:'zucchini',amountG:80,rolle:'veg'},{foodId:'potato',amountG:100,rolle:'beilage'},
+    {foodId:'olive_oil',amountG:5,rolle:'extras'}
+  ],notizen:'Kartoffeln und Karotten würfeln, in Öl kurz anschwitzen. Linsen und Zucchini dazu, mit 400ml Brühe aufgießen. 20 Min. köcheln bis alles weich ist.'},
+  {name:'Wrap / Tortilla',cat:'wrap',img:'rezeptbilder/wrap.jpg',totalPortions:1,ingredients:[
+    {foodId:'chicken',amountG:100,rolle:'protein'},{foodId:'iceberg',amountG:30,rolle:'veg'},
+    {foodId:'tomato',amountG:50,rolle:'veg'},{foodId:'bellpepper',amountG:40,rolle:'veg'},
+    {foodId:'gouda',amountG:20,rolle:'extras'}
+  ],notizen:'Hähnchen in Streifen braten, würzen. Tortilla kurz in der Pfanne erwärmen. Salat, Tomaten, Paprika und Käse drauf, Hähnchen dazu, einrollen.'}
 ];
 
 // ============================================================
@@ -1751,7 +1751,7 @@ function renderRecipes() {
     var catLabel=catObj?catObj.icon+' '+catObj.label:'';
     h+='<div class="recipe-card'+(r.img?' recipe-card-with-img':'')+'">';
     // Image or emoji placeholder
-    if(r.img) h+='<img class="recipe-img" src="'+r.img+'" alt="'+r.name+'" loading="lazy">';
+    if(r.img) h+='<img class="recipe-img" src="'+r.img+'" alt="'+r.name+'" loading="lazy" onerror="this.outerHTML=\'<div class=\\\'recipe-img-placeholder\\\'>'+recipeCatIcon(r.cat||'sonstiges')+'</div>\'">';
     else h+='<div class="recipe-img-placeholder">'+recipeCatIcon(r.cat||'sonstiges')+'</div>';
     h+='<div class="recipe-main" onclick="toggleRecipeExpand(\''+r.id+'\')"><div><div class="recipe-name">'+r.name+'</div><div class="recipe-meta">'+catLabel+' | '+r.totalPortions+' Port. | '+n.kcal+' kcal/Port.</div></div><button class="food-add-btn">'+(ex?'&minus;':'+')+'</button></div>';
     if (ex) {
@@ -2222,15 +2222,21 @@ function toggleDarkMode(on) {
 // ===== INIT =====
 const hasProfile = loadState();
 migrateCustomToStandard();
-// Seed template recipes — add missing + update existing with new fields (img, cat)
+// Seed template recipes — add missing + sync existing with template data
 (function(){
   var changed=0;
   RECIPE_TEMPLATES.forEach(function(t,i){
     var existing=recipes.find(function(r){return r.name===t.name;});
     if(existing){
-      if(!existing.cat&&t.cat){existing.cat=t.cat;changed++;}
-      if(!existing.img&&t.img){existing.img=t.img;changed++;}
-      if(!existing.notizen&&t.notizen){existing.notizen=t.notizen;changed++;}
+      // Update all template fields to latest version
+      if(t.cat&&existing.cat!==t.cat){existing.cat=t.cat;changed++;}
+      if(t.img&&existing.img!==t.img){existing.img=t.img;changed++;}
+      if(t.notizen&&existing.notizen!==t.notizen){existing.notizen=t.notizen;changed++;}
+      if(existing.totalPortions!==t.totalPortions){existing.totalPortions=t.totalPortions;changed++;}
+      // Sync ingredients if amounts changed (template update)
+      var tKey=t.ingredients.map(function(x){return x.foodId+':'+x.amountG;}).join(',');
+      var eKey=existing.ingredients.map(function(x){return x.foodId+':'+x.amountG;}).join(',');
+      if(tKey!==eKey){existing.ingredients=t.ingredients.map(function(ing){return{foodId:ing.foodId,amountG:ing.amountG,rolle:ing.rolle};});changed++;}
     } else {
       recipes.push({id:'tmpl_'+i+'_'+Date.now(),name:t.name,totalPortions:t.totalPortions,cat:t.cat||'sonstiges',
         ingredients:t.ingredients.map(function(ing){return{foodId:ing.foodId,amountG:ing.amountG,rolle:ing.rolle};}),
@@ -2243,7 +2249,45 @@ migrateCustomToStandard();
 if (hasProfile && profile) showMainApp();
 else showOnboarding();
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+// === Auto-Update System ===
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').then(function(reg) {
+    // Check for updates every 60 seconds
+    setInterval(function(){ reg.update(); }, 60000);
+    // Listen for new service worker
+    reg.addEventListener('updatefound', function() {
+      var newWorker = reg.installing;
+      if (!newWorker) return;
+      newWorker.addEventListener('statechange', function() {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+          showUpdateBanner(newWorker);
+        }
+      });
+    });
+  }).catch(function(){});
+  // Reload when new SW takes over
+  var refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', function() {
+    if (!refreshing) { refreshing = true; window.location.reload(); }
+  });
+}
+
+function showUpdateBanner(worker) {
+  if (document.getElementById('updateBanner')) return;
+  var b = document.createElement('div');
+  b.id = 'updateBanner';
+  b.innerHTML = '<span>Update verfügbar!</span><button onclick="applyUpdate()">Jetzt laden</button><button onclick="this.parentElement.remove()" style="background:none;border:none;color:#fff;font-size:1.1rem;cursor:pointer;padding:0 4px">&times;</button>';
+  b.style.cssText = 'position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;padding:10px 16px;border-radius:12px;display:flex;align-items:center;gap:10px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,0.3);font-size:0.85rem;font-weight:600';
+  b.querySelector('button').style.cssText = 'background:#fff;color:var(--primary);border:none;padding:6px 14px;border-radius:8px;font-weight:700;font-size:0.82rem;cursor:pointer';
+  document.body.appendChild(b);
+  window._pendingWorker = worker;
+}
+
+function applyUpdate() {
+  if (window._pendingWorker) window._pendingWorker.postMessage({type:'SKIP_WAITING'});
+  var b = document.getElementById('updateBanner');
+  if (b) b.remove();
+}
 </script>
 </body>
 </html>

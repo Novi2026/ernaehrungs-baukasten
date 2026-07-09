@@ -1,4 +1,4 @@
-const CACHE_NAME = 'eb-cache-v16';
+const CACHE_NAME = 'eb-cache-v18';
 const ASSETS = [
   './',
   './index.html',
@@ -43,4 +43,11 @@ self.addEventListener('fetch', e => {
       return cached || fetchPromise;
     })
   );
+});
+
+// Listen for skip-waiting message from the app
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
