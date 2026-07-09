@@ -1,10 +1,17 @@
-const CACHE_NAME = 'eb-cache-v14';
+const CACHE_NAME = 'eb-cache-v16';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './rezeptbilder/gemuesepfanne.jpg',
+  './rezeptbilder/pasta.jpg',
+  './rezeptbilder/buddha-bowl.jpg',
+  './rezeptbilder/salat.jpg',
+  './rezeptbilder/ofengemuese.jpg',
+  './rezeptbilder/eintopf.jpg',
+  './rezeptbilder/wrap.jpg'
 ];
 
 self.addEventListener('install', e => {
