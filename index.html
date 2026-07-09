@@ -284,10 +284,16 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .week-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
 .week-btn .week-label{font-size:0.68rem;color:var(--text-muted);display:block;margin-top:1px}
 .week-btn.active .week-label{color:rgba(255,255,255,0.8)}
-.planned-recipes{display:flex;gap:10px;overflow-x:auto;padding:4px 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-.planned-recipes::-webkit-scrollbar{display:none}
+.dashboard-collapse{background:var(--card);border-radius:12px;margin:0 16px 12px;border:1.5px solid var(--border);overflow:hidden}
+.dashboard-collapse-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;cursor:pointer}
+.dashboard-score-mini{display:flex;align-items:center;gap:10px;font-weight:700;font-size:0.95rem}
+.dashboard-score-mini svg{flex-shrink:0}
+.dashboard-collapse-body{max-height:0;overflow:hidden;transition:max-height .3s ease}
+.dashboard-collapse-body.open{max-height:2000px}
+.week-selector-top{padding:10px 16px 4px}
 .planned-recipes{margin-bottom:16px;padding:12px;background:var(--card);border-radius:12px;border:1.5px solid var(--border)}
-.planned-recipes-grid{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+.planned-recipes-grid{display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.planned-recipes-grid::-webkit-scrollbar{display:none}
 .planned-recipe-card{min-width:140px;max-width:160px;border-radius:10px;overflow:hidden;background:var(--bg);border:1.5px solid var(--border);cursor:pointer;flex-shrink:0;transition:border-color .2s}
 .planned-recipe-card:hover{border-color:var(--primary)}
 .planned-recipe-img{width:100%;height:80px;overflow:hidden}
@@ -296,6 +302,20 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .planned-recipe-info{padding:6px 8px}
 .planned-recipe-name{font-size:0.78rem;font-weight:700;line-height:1.2}
 .planned-recipe-meta{font-size:0.68rem;color:var(--text-muted);margin-top:2px}
+.planned-tab-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
+.planned-tab-card{border-radius:12px;overflow:hidden;background:var(--card);border:1.5px solid var(--border);cursor:pointer;transition:border-color .2s}
+.planned-tab-card:hover{border-color:var(--primary)}
+.planned-tab-card img{width:100%;height:100px;object-fit:cover;display:block}
+.planned-tab-card .ptc-placeholder{width:100%;height:80px;display:flex;align-items:center;justify-content:center;font-size:2rem;background:linear-gradient(135deg,var(--primary-light),var(--bg))}
+.planned-tab-card .ptc-info{padding:8px 10px}
+.planned-tab-card .ptc-name{font-size:0.85rem;font-weight:700;line-height:1.2}
+.planned-tab-card .ptc-meta{font-size:0.72rem;color:var(--text-muted);margin-top:3px}
+.planned-tab-detail{padding:16px;background:var(--card);border-radius:12px;margin:0 16px 12px;border:1.5px solid var(--border)}
+.planned-tab-detail h3{font-size:1rem;margin:0 0 8px}
+.planned-tab-detail .ptd-img{width:100%;border-radius:8px;margin-bottom:12px}
+.planned-tab-detail .ptd-ingredients{margin-bottom:12px}
+.planned-tab-detail .ptd-ing{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:0.82rem}
+.planned-tab-detail .ptd-notizen{font-style:italic;font-size:0.82rem;color:var(--text-light);line-height:1.5;white-space:pre-line}
 .shop-sources{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
 .shop-source{font-size:0.68rem;color:var(--text-muted);background:var(--bg);padding:1px 6px;border-radius:4px}
 .recipe-cat-filters{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -506,12 +526,21 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 
   <!-- TAB: Woche -->
   <div class="tab-content active" id="tabWoche">
-    <div class="score-section" id="scoreSection"></div>
+    <div class="week-selector-top" id="weekSelector"></div>
+    <div class="dashboard-collapse" id="dashboardCollapse">
+      <div class="dashboard-collapse-header" onclick="toggleDashboard()">
+        <div class="dashboard-score-mini" id="dashboardScoreMini"></div>
+        <span class="accordion-arrow" id="dashboardArrow">&#9660;</span>
+      </div>
+      <div class="dashboard-collapse-body" id="dashboardBody">
+        <div class="score-section" id="scoreSection"></div>
+        <div class="water-section" id="waterSection"></div>
+      </div>
+    </div>
     <div class="day-selector" id="daySelector"></div>
-    <div class="water-section" id="waterSection"></div>
     <div class="accordion" id="accBaukasten">
       <div class="accordion-header" onclick="toggleAccordion('accBaukasten')">
-        <h2>Baukasten</h2>
+        <h2>Wochenplan</h2>
         <span class="accordion-arrow" id="accBaukastenArrow">&#9660;</span>
       </div>
       <div class="accordion-body" id="accBaukastenBody">
@@ -548,11 +577,12 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
     <div id="pantrySummary"></div>
   </div>
 
-  <!-- TAB: Rezepte -->
+  <!-- TAB: Rezepte (Geplante + Katalog) -->
   <div class="tab-content" id="tabRezepte">
+    <div class="planned-recipes-tab" id="plannedRecipesTab"></div>
     <div class="recipe-section">
       <div class="recipe-header-bar">
-        <h2>Rezepte</h2>
+        <h2>Rezept-Katalog</h2>
         <button class="header-btn" style="color:var(--primary);border-color:var(--primary)" onclick="openRecipeModal()">+ Rezept</button>
       </div>
       <div id="recipeList"></div>
@@ -835,6 +865,8 @@ let editingRecipeId = null;
 let recipeIngRows = [];
 let recipeCatFilter = 'all';
 let activeWeek = 0; // 0=current week, 1-3=future weeks
+let dashboardOpen = false;
+let expandedPlannedRecipe = null;
 let obStep = 1;
 let accordionState = {accBaukasten:true, accKatalog:false};
 
@@ -1246,7 +1278,7 @@ function switchTab(tabName) {
   document.querySelectorAll('.tab-bar button').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tabName));
   if (tabName === 'Einkauf') renderShopping();
   if (tabName === 'Vorrat') renderPantry();
-  if (tabName === 'Rezepte') renderRecipes();
+  if (tabName === 'Rezepte') { renderRecipes(); renderPlannedRecipesTab(); }
   if (tabName === 'Profil') renderProfile();
 }
 
@@ -1457,8 +1489,8 @@ function calcOverallScore() {
 // RENDERING
 // ============================================================
 function render() {
-  renderScore(); renderDaySelector(); renderWater(); renderAccordions();
-  renderCatalog(); renderPlan(); renderShopping(); renderPantry(); renderRecipes();
+  renderWeekSelector(); renderScore(); renderDashboardState(); renderDaySelector(); renderWater(); renderAccordions();
+  renderCatalog(); renderPlan(); renderShopping(); renderPantry(); renderRecipes(); renderPlannedRecipesTab();
   saveState();
 }
 
@@ -1485,19 +1517,36 @@ function renderScore() {
   });
   h += '</div>';
   document.getElementById('scoreSection').innerHTML = h;
+  // Mini score for collapsed header
+  var miniH = '<svg width="36" height="36" viewBox="0 0 120 120"><circle cx="60" cy="60" r="50" fill="none" stroke="var(--border)" stroke-width="10"/><circle cx="60" cy="60" r="50" fill="none" stroke="'+ringColor+'" stroke-width="10" stroke-linecap="round" stroke-dasharray="'+circ+'" stroke-dashoffset="'+dash+'"/></svg>';
+  miniH += '<span>Wochen-Score: '+score+'%</span>';
+  document.getElementById('dashboardScoreMini').innerHTML = miniH;
 }
 
-function renderDaySelector() {
+function renderWeekSelector() {
   var kw=currentKW();
   var h='<div class="week-slider">';
-  var labels=['Diese Woche','Nächste Woche','In 2 Wochen','In 3 Wochen'];
+  var labels=['Diese Woche','Nächste','In 2 Wo.','In 3 Wo.'];
   for(var w=0;w<4;w++){
     var weekKW=kw+w;
     var itemCount=plan.filter(function(p){return !p.isBasis&&(p.week||0)===w;}).length;
-    h+='<button class="week-btn'+(activeWeek===w?' active':'')+'" onclick="setActiveWeek('+w+')"><div>KW '+weekKW+'</div><div class="week-label">'+labels[w]+(itemCount>0?' ('+itemCount+')':'')+'</div></button>';
+    h+='<button class="week-btn'+(activeWeek===w?' active':'')+'" onclick="setActiveWeek('+w+')"><div style="font-size:0.75rem">KW '+weekKW+'</div><div class="week-label">'+labels[w]+(itemCount>0?' ('+itemCount+')':'')+'</div></button>';
   }
   h+='</div>';
-  h+='<div style="display:flex;align-items:center;gap:10px"><span class="day-selector-label">Planen für</span><div class="day-btns">';
+  document.getElementById('weekSelector').innerHTML = h;
+}
+
+function toggleDashboard() {
+  dashboardOpen = !dashboardOpen;
+  renderDashboardState();
+}
+function renderDashboardState() {
+  document.getElementById('dashboardBody').classList.toggle('open', dashboardOpen);
+  document.getElementById('dashboardArrow').classList.toggle('open', dashboardOpen);
+}
+
+function renderDaySelector() {
+  var h='<div style="display:flex;align-items:center;gap:10px"><span class="day-selector-label">Planen für</span><div class="day-btns">';
   for (let d=1;d<=7;d++) h += '<button class="'+(d===planDays?'active':'')+'" onclick="setPlanDays('+d+')">'+d+'</button>';
   h += '</div><span class="day-selector-label">Tage</span></div>';
   h += '<span style="font-size:0.75rem;color:var(--text-muted)">'+scaledTargets().kcal+' kcal Ziel</span>';
@@ -1505,6 +1554,55 @@ function renderDaySelector() {
 }
 function setActiveWeek(w){activeWeek=w;render();}
 function setPlanDays(d) { planDays=d; render(); }
+
+function renderPlannedRecipesTab() {
+  var el = document.getElementById('plannedRecipesTab'); if (!el) return;
+  // Get all planned recipes across all weeks
+  var allPlanned = plan.filter(function(p){return p.recipeId;});
+  if (allPlanned.length===0 && !expandedPlannedRecipe) {
+    el.innerHTML='<div style="text-align:center;padding:40px 20px;color:var(--text-muted)"><div style="font-size:2rem;margin-bottom:8px">🍽️</div><p>Noch keine Rezepte geplant.</p><p style="font-size:0.82rem">Füge Rezepte im <strong>Rezept-Katalog</strong> unten hinzu.</p></div>';
+    return;
+  }
+  // Show detail view if expanded
+  if (expandedPlannedRecipe) {
+    var item = plan.find(function(p){return p.recipeId===expandedPlannedRecipe;});
+    var r = item ? getRecipe(item.recipeId) : null;
+    if (!r) { expandedPlannedRecipe=null; renderPlannedRecipesTab(); return; }
+    var n = recipeNutritionPerPortion(r);
+    var weekLabel = item.isBasis ? 'Basis' : 'KW '+(currentKW()+(item.week||0));
+    var h = '<div class="planned-tab-detail">';
+    h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><button style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text)" onclick="expandedPlannedRecipe=null;renderPlannedRecipesTab()">← Zurück</button><span style="font-size:0.75rem;color:var(--text-muted)">'+weekLabel+' | '+item.portionsThisWeek+'x</span></div>';
+    h += '<h3>'+r.name+'</h3>';
+    if (r.img) h += '<img class="ptd-img" src="'+r.img+'" onerror="this.style.display=\'none\'">';
+    h += '<div style="display:flex;gap:12px;margin-bottom:12px;font-size:0.78rem;color:var(--text-light)"><span>'+n.kcal+' kcal</span><span>'+n.p+'g E</span><span>'+n.f+'g F</span><span>'+n.c+'g KH</span></div>';
+    h += '<h4 style="font-size:0.85rem;margin:12px 0 6px">Zutaten</h4><div class="ptd-ingredients">';
+    r.ingredients.forEach(function(ing){
+      var food = getFood(ing.foodId);
+      if (!food) return;
+      h += '<div class="ptd-ing"><span>'+food.n+'</span><span>'+ing.amountG+'g</span></div>';
+    });
+    h += '</div>';
+    if (r.notizen) h += '<h4 style="font-size:0.85rem;margin:12px 0 6px">Anleitung</h4><div class="ptd-notizen">'+r.notizen+'</div>';
+    h += '</div>';
+    el.innerHTML = h;
+    return;
+  }
+  // Grid view
+  var h = '<div style="padding:12px 16px 0"><h2 style="font-size:1rem;margin:0">Geplante Rezepte</h2></div><div class="planned-tab-grid">';
+  allPlanned.forEach(function(item) {
+    var r = getRecipe(item.recipeId); if (!r) return;
+    var n = recipeNutritionPerPortion(r);
+    var cat = RECIPE_CATEGORIES.find(function(c){return c.id===r.cat;});
+    var weekLabel = item.isBasis ? 'Basis' : 'KW '+(currentKW()+(item.week||0));
+    h += '<div class="planned-tab-card" onclick="expandedPlannedRecipe=\''+item.recipeId+'\';renderPlannedRecipesTab()">';
+    if (r.img) h += '<img src="'+r.img+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
+    h += '<div class="ptc-placeholder"'+(r.img?' style="display:none"':'')+'>'+(cat?cat.icon:'🍽️')+'</div>';
+    h += '<div class="ptc-info"><div class="ptc-name">'+r.name+'</div>';
+    h += '<div class="ptc-meta">'+weekLabel+' | '+item.portionsThisWeek+'x | '+n.kcal*item.portionsThisWeek+' kcal</div></div></div>';
+  });
+  h += '</div>';
+  el.innerHTML = h;
+}
 
 const WATER_DAYS = ['Mo','Di','Mi','Do','Fr','Sa','So'];
 function renderWater() {
