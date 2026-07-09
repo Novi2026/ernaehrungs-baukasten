@@ -316,6 +316,9 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .planned-tab-detail .ptd-ingredients{margin-bottom:12px}
 .planned-tab-detail .ptd-ing{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:0.82rem}
 .planned-tab-detail .ptd-notizen{font-style:italic;font-size:0.82rem;color:var(--text-light);line-height:1.5;white-space:pre-line}
+.recipe-detail-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center}
+.recipe-detail-panel{background:var(--card);border-radius:16px 16px 0 0;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
 .shop-sources{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
 .shop-source{font-size:0.68rem;color:var(--text-muted);background:var(--bg);padding:1px 6px;border-radius:4px}
 .recipe-cat-filters{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -1569,17 +1572,23 @@ function renderPlannedRecipesTab() {
     var r = item ? getRecipe(item.recipeId) : null;
     if (!r) { expandedPlannedRecipe=null; renderPlannedRecipesTab(); return; }
     var n = recipeNutritionPerPortion(r);
+    var idx = plan.indexOf(item);
     var weekLabel = item.isBasis ? 'Basis' : 'KW '+(currentKW()+(item.week||0));
     var h = '<div class="planned-tab-detail">';
-    h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><button style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text)" onclick="expandedPlannedRecipe=null;renderPlannedRecipesTab()">← Zurück</button><span style="font-size:0.75rem;color:var(--text-muted)">'+weekLabel+' | '+item.portionsThisWeek+'x</span></div>';
+    h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><button style="background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--text)" onclick="expandedPlannedRecipe=null;renderPlannedRecipesTab()">← Zurück</button>';
+    h += '<button style="background:none;border:none;font-size:0.82rem;cursor:pointer;color:var(--danger);font-weight:600" onclick="removePlanItem('+idx+');expandedPlannedRecipe=null;renderPlannedRecipesTab()">Entfernen</button></div>';
     h += '<h3>'+r.name+'</h3>';
     if (r.img) h += '<img class="ptd-img" src="'+r.img+'" onerror="this.style.display=\'none\'">';
-    h += '<div style="display:flex;gap:12px;margin-bottom:12px;font-size:0.78rem;color:var(--text-light)"><span>'+n.kcal+' kcal</span><span>'+n.p+'g E</span><span>'+n.f+'g F</span><span>'+n.c+'g KH</span></div>';
-    h += '<h4 style="font-size:0.85rem;margin:12px 0 6px">Zutaten</h4><div class="ptd-ingredients">';
+    // Portion control
+    h += '<div style="display:flex;align-items:center;gap:10px;margin:10px 0"><span style="font-size:0.82rem;font-weight:600">Portionen:</span>';
+    h += '<div class="stepper" style="display:inline-flex"><button onclick="changeRecipePortions(\''+item.recipeId+'\',-1)">-</button><span style="padding:0 12px;font-weight:700;font-size:0.9rem">'+item.portionsThisWeek+'</span><button onclick="changeRecipePortions(\''+item.recipeId+'\',1)">+</button></div>';
+    h += '<span style="font-size:0.75rem;color:var(--text-muted)">'+weekLabel+'</span></div>';
+    h += '<div style="display:flex;gap:12px;margin-bottom:12px;font-size:0.78rem;color:var(--text-light)"><span>'+n.kcal*item.portionsThisWeek+' kcal</span><span>'+Math.round(n.p*item.portionsThisWeek)+'g E</span><span>'+Math.round(n.f*item.portionsThisWeek)+'g F</span><span>'+Math.round(n.c*item.portionsThisWeek)+'g KH</span></div>';
+    h += '<h4 style="font-size:0.85rem;margin:12px 0 6px">Zutaten ('+item.portionsThisWeek+'x)</h4><div class="ptd-ingredients">';
     r.ingredients.forEach(function(ing){
       var food = getFood(ing.foodId);
       if (!food) return;
-      h += '<div class="ptd-ing"><span>'+food.n+'</span><span>'+ing.amountG+'g</span></div>';
+      h += '<div class="ptd-ing"><span>'+food.n+'</span><span>'+Math.round(ing.amountG*item.portionsThisWeek)+'g</span></div>';
     });
     h += '</div>';
     if (r.notizen) h += '<h4 style="font-size:0.85rem;margin:12px 0 6px">Anleitung</h4><div class="ptd-notizen">'+r.notizen+'</div>';
@@ -1594,7 +1603,7 @@ function renderPlannedRecipesTab() {
     var n = recipeNutritionPerPortion(r);
     var cat = RECIPE_CATEGORIES.find(function(c){return c.id===r.cat;});
     var weekLabel = item.isBasis ? 'Basis' : 'KW '+(currentKW()+(item.week||0));
-    h += '<div class="planned-tab-card" onclick="expandedPlannedRecipe=\''+item.recipeId+'\';renderPlannedRecipesTab()">';
+    h += '<div class="planned-tab-card" onclick="openRecipeDetail(\''+item.recipeId+'\')">';
     if (r.img) h += '<img src="'+r.img+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
     h += '<div class="ptc-placeholder"'+(r.img?' style="display:none"':'')+'>'+(cat?cat.icon:'🍽️')+'</div>';
     h += '<div class="ptc-info"><div class="ptc-name">'+r.name+'</div>';
@@ -1664,7 +1673,7 @@ function renderPlan() {
       var cat = RECIPE_CATEGORIES.find(function(c){return c.id===r.cat;});
       var imgHtml = r.img ? '<img src="'+r.img+'" alt="'+r.name+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' : '';
       var placeholderIcon = cat ? cat.icon : '🍽️';
-      h += '<div class="planned-recipe-card" onclick="switchTab(\'rezepte\');toggleRecipeExpand(\''+item.recipeId+'\')">';
+      h += '<div class="planned-recipe-card" onclick="openRecipeDetail(\''+item.recipeId+'\')">';
       if (r.img) h += '<div class="planned-recipe-img">'+imgHtml+'<div class="recipe-img-placeholder" style="display:none">'+placeholderIcon+'</div></div>';
       else h += '<div class="planned-recipe-img"><div class="recipe-img-placeholder">'+placeholderIcon+'</div></div>';
       h += '<div class="planned-recipe-info"><div class="planned-recipe-name">'+r.name+'</div>';
@@ -1987,6 +1996,50 @@ function recipeNutritionPerPortion(r) {
   const d=r.totalPortions||1; return {kcal:Math.round(t.kcal/d),p:Math.round(t.p/d),f:Math.round(t.f/d),c:Math.round(t.c/d)};
 }
 function toggleRecipeExpand(id) { expandedRecipe=expandedRecipe===id?null:id; renderRecipes(); }
+
+function openRecipeDetail(recipeId) {
+  // Open recipe detail as fullscreen overlay
+  var item = plan.find(function(p){return p.recipeId===recipeId;});
+  var r = item ? getRecipe(item.recipeId) : null;
+  if (!r) return;
+  var n = recipeNutritionPerPortion(r);
+  var idx = plan.indexOf(item);
+  var weekLabel = item.isBasis ? 'Basis' : 'KW '+(currentKW()+(item.week||0));
+  var ov = document.createElement('div');
+  ov.className = 'recipe-detail-overlay';
+  var h = '<div class="recipe-detail-panel">';
+  h += '<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 16px 0"><button style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text)" onclick="this.closest(\'.recipe-detail-overlay\').remove()">✕</button>';
+  h += '<button style="background:none;border:none;font-size:0.82rem;cursor:pointer;color:var(--danger);font-weight:600" onclick="removePlanItem('+idx+');this.closest(\'.recipe-detail-overlay\').remove();render()">Entfernen</button></div>';
+  if (r.img) h += '<img style="width:100%;max-height:200px;object-fit:cover" src="'+r.img+'" onerror="this.style.display=\'none\'">';
+  h += '<div style="padding:16px">';
+  h += '<h3 style="margin:0 0 8px;font-size:1.1rem">'+r.name+'</h3>';
+  // Portion stepper
+  h += '<div style="display:flex;align-items:center;gap:10px;margin:10px 0"><span style="font-size:0.82rem;font-weight:600">Portionen:</span>';
+  h += '<div class="stepper" style="display:inline-flex"><button onclick="changeRecipePortions(\''+item.recipeId+'\',-1);this.closest(\'.recipe-detail-overlay\').remove();openRecipeDetail(\''+item.recipeId+'\')">-</button><span style="padding:0 12px;font-weight:700;font-size:0.9rem">'+item.portionsThisWeek+'</span><button onclick="changeRecipePortions(\''+item.recipeId+'\',1);this.closest(\'.recipe-detail-overlay\').remove();openRecipeDetail(\''+item.recipeId+'\')">+</button></div>';
+  h += '<span style="font-size:0.75rem;color:var(--text-muted)">'+weekLabel+'</span></div>';
+  h += '<div style="display:flex;gap:12px;margin-bottom:14px;font-size:0.8rem;color:var(--text-light)"><span>'+n.kcal*item.portionsThisWeek+' kcal</span><span>'+Math.round(n.p*item.portionsThisWeek)+'g E</span><span>'+Math.round(n.f*item.portionsThisWeek)+'g F</span><span>'+Math.round(n.c*item.portionsThisWeek)+'g KH</span></div>';
+  h += '<h4 style="font-size:0.88rem;margin:14px 0 8px">Zutaten ('+item.portionsThisWeek+'x)</h4><div class="ptd-ingredients">';
+  r.ingredients.forEach(function(ing){
+    var food = getFood(ing.foodId);
+    if (!food) return;
+    h += '<div class="ptd-ing"><span>'+food.n+'</span><span>'+Math.round(ing.amountG*item.portionsThisWeek)+'g</span></div>';
+  });
+  h += '</div>';
+  if (r.notizen) h += '<h4 style="font-size:0.88rem;margin:14px 0 8px">Anleitung</h4><div class="ptd-notizen">'+r.notizen+'</div>';
+  h += '</div></div>';
+  ov.innerHTML = h;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
+}
+
+function changeRecipePortions(recipeId, delta) {
+  var item = plan.find(function(p){return p.recipeId===recipeId;});
+  if (!item) return;
+  item.portionsThisWeek = Math.max(1, item.portionsThisWeek + delta);
+  saveState();
+  renderPlan();
+  renderPlannedRecipesTab();
+}
 
 // ===== PROFILE TAB =====
 function renderProfile() {
