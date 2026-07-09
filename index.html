@@ -319,6 +319,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .recipe-detail-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center}
 .recipe-detail-panel{background:var(--card);border-radius:16px 16px 0 0;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;animation:slideUp .25s ease}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.ing-step-btn{width:28px;height:28px;border-radius:50%;border:1.5px solid var(--border);background:var(--bg);font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text)}
 .shop-sources{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
 .shop-source{font-size:0.68rem;color:var(--text-muted);background:var(--bg);padding:1px 6px;border-radius:4px}
 .recipe-cat-filters{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -1584,11 +1585,16 @@ function renderPlannedRecipesTab() {
     h += '<div class="stepper" style="display:inline-flex"><button onclick="changeRecipePortions(\''+item.recipeId+'\',-1)">-</button><span style="padding:0 12px;font-weight:700;font-size:0.9rem">'+item.portionsThisWeek+'</span><button onclick="changeRecipePortions(\''+item.recipeId+'\',1)">+</button></div>';
     h += '<span style="font-size:0.75rem;color:var(--text-muted)">'+weekLabel+'</span></div>';
     h += '<div style="display:flex;gap:12px;margin-bottom:12px;font-size:0.78rem;color:var(--text-light)"><span>'+n.kcal*item.portionsThisWeek+' kcal</span><span>'+Math.round(n.p*item.portionsThisWeek)+'g E</span><span>'+Math.round(n.f*item.portionsThisWeek)+'g F</span><span>'+Math.round(n.c*item.portionsThisWeek)+'g KH</span></div>';
-    h += '<h4 style="font-size:0.85rem;margin:12px 0 6px">Zutaten ('+item.portionsThisWeek+'x)</h4><div class="ptd-ingredients">';
-    r.ingredients.forEach(function(ing){
+    h += '<h4 style="font-size:0.85rem;margin:12px 0 6px">Zutaten (pro Portion)</h4><div class="ptd-ingredients">';
+    r.ingredients.forEach(function(ing, ingIdx){
       var food = getFood(ing.foodId);
       if (!food) return;
-      h += '<div class="ptd-ing"><span>'+food.n+'</span><span>'+Math.round(ing.amountG*item.portionsThisWeek)+'g</span></div>';
+      h += '<div class="ptd-ing" style="align-items:center"><span>'+food.n+'</span>';
+      h += '<div style="display:flex;align-items:center;gap:4px">';
+      h += '<button class="ing-step-btn" onclick="changeIngAmount(\''+r.id+'\','+ingIdx+',-10);expandedPlannedRecipe=\''+r.id+'\';renderPlannedRecipesTab()">−</button>';
+      h += '<span style="min-width:40px;text-align:center;font-weight:600;font-size:0.82rem">'+ing.amountG+'g</span>';
+      h += '<button class="ing-step-btn" onclick="changeIngAmount(\''+r.id+'\','+ingIdx+',10);expandedPlannedRecipe=\''+r.id+'\';renderPlannedRecipesTab()">+</button>';
+      h += '</div></div>';
     });
     h += '</div>';
     if (r.notizen) h += '<h4 style="font-size:0.85rem;margin:12px 0 6px">Anleitung</h4><div class="ptd-notizen">'+r.notizen+'</div>';
@@ -2018,11 +2024,16 @@ function openRecipeDetail(recipeId) {
   h += '<div class="stepper" style="display:inline-flex"><button onclick="changeRecipePortions(\''+item.recipeId+'\',-1);this.closest(\'.recipe-detail-overlay\').remove();openRecipeDetail(\''+item.recipeId+'\')">-</button><span style="padding:0 12px;font-weight:700;font-size:0.9rem">'+item.portionsThisWeek+'</span><button onclick="changeRecipePortions(\''+item.recipeId+'\',1);this.closest(\'.recipe-detail-overlay\').remove();openRecipeDetail(\''+item.recipeId+'\')">+</button></div>';
   h += '<span style="font-size:0.75rem;color:var(--text-muted)">'+weekLabel+'</span></div>';
   h += '<div style="display:flex;gap:12px;margin-bottom:14px;font-size:0.8rem;color:var(--text-light)"><span>'+n.kcal*item.portionsThisWeek+' kcal</span><span>'+Math.round(n.p*item.portionsThisWeek)+'g E</span><span>'+Math.round(n.f*item.portionsThisWeek)+'g F</span><span>'+Math.round(n.c*item.portionsThisWeek)+'g KH</span></div>';
-  h += '<h4 style="font-size:0.88rem;margin:14px 0 8px">Zutaten ('+item.portionsThisWeek+'x)</h4><div class="ptd-ingredients">';
-  r.ingredients.forEach(function(ing){
+  h += '<h4 style="font-size:0.88rem;margin:14px 0 8px">Zutaten (pro Portion)</h4><div class="ptd-ingredients">';
+  r.ingredients.forEach(function(ing, ingIdx){
     var food = getFood(ing.foodId);
     if (!food) return;
-    h += '<div class="ptd-ing"><span>'+food.n+'</span><span>'+Math.round(ing.amountG*item.portionsThisWeek)+'g</span></div>';
+    h += '<div class="ptd-ing" style="align-items:center"><span>'+food.n+'</span>';
+    h += '<div style="display:flex;align-items:center;gap:4px">';
+    h += '<button class="ing-step-btn" onclick="changeIngAmount(\''+r.id+'\','+ingIdx+',-10)">−</button>';
+    h += '<span style="min-width:40px;text-align:center;font-weight:600;font-size:0.82rem">'+ing.amountG+'g</span>';
+    h += '<button class="ing-step-btn" onclick="changeIngAmount(\''+r.id+'\','+ingIdx+',10)">+</button>';
+    h += '</div></div>';
   });
   h += '</div>';
   if (r.notizen) h += '<h4 style="font-size:0.88rem;margin:14px 0 8px">Anleitung</h4><div class="ptd-notizen">'+r.notizen+'</div>';
@@ -2030,6 +2041,15 @@ function openRecipeDetail(recipeId) {
   ov.innerHTML = h;
   document.body.appendChild(ov);
   ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
+}
+
+function changeIngAmount(recipeId, ingIdx, delta) {
+  var r = getRecipe(recipeId); if (!r) return;
+  var ing = r.ingredients[ingIdx]; if (!ing) return;
+  ing.amountG = Math.max(5, ing.amountG + delta);
+  saveState();
+  document.querySelector('.recipe-detail-overlay')?.remove();
+  openRecipeDetail(recipeId);
 }
 
 function changeRecipePortions(recipeId, delta) {
