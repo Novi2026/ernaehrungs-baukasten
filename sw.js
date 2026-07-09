@@ -1,15 +1,15 @@
-const CACHE_NAME = 'eb-cache-v18';
+const CACHE_NAME = 'eb-cache-v19';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
-  './rezeptbilder/gemuesepfanne.jpg',
+  './rezeptbilder/pfanne.jpg',
   './rezeptbilder/pasta.jpg',
-  './rezeptbilder/buddha-bowl.jpg',
+  './rezeptbilder/bowl.jpg',
   './rezeptbilder/salat.jpg',
-  './rezeptbilder/ofengemuese.jpg',
+  './rezeptbilder/ofen.jpg',
   './rezeptbilder/eintopf.jpg',
   './rezeptbilder/wrap.jpg'
 ];

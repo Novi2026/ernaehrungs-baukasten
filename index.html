@@ -282,7 +282,7 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .recipe-cat-filters::-webkit-scrollbar{display:none}
 .recipe-cat-btn{padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);font-size:0.78rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s}
 .recipe-cat-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
-.recipe-img{width:100%;height:160px;border-radius:10px 10px 0 0;object-fit:cover;display:block}
+.recipe-img{width:100%;border-radius:10px 10px 0 0;display:block}
 .recipe-img-placeholder{width:100%;height:100px;border-radius:10px 10px 0 0;display:flex;align-items:center;justify-content:center;font-size:2.2rem;background:linear-gradient(135deg,var(--primary-light),var(--bg))}
 .recipe-card-with-img{overflow:hidden}
 .recipe-card-with-img .recipe-main{border-radius:0}
@@ -756,7 +756,7 @@ const RECIPE_CATEGORIES = [
 ];
 
 const RECIPE_TEMPLATES = [
-  {name:'Gemüsepfanne',cat:'pfanne',img:'rezeptbilder/gemuesepfanne.jpg',totalPortions:1,ingredients:[
+  {name:'Gemüsepfanne',cat:'pfanne',img:'rezeptbilder/pfanne.jpg',totalPortions:1,ingredients:[
     {foodId:'chicken',amountG:150,rolle:'protein'},{foodId:'bellpepper',amountG:80,rolle:'veg'},
     {foodId:'zucchini',amountG:100,rolle:'veg'},{foodId:'rice',amountG:75,rolle:'beilage'},
     {foodId:'olive_oil',amountG:8,rolle:'extras'}
@@ -766,7 +766,7 @@ const RECIPE_TEMPLATES = [
     {foodId:'bellpepper',amountG:60,rolle:'veg'},{foodId:'pasta',amountG:80,rolle:'beilage'},
     {foodId:'olive_oil',amountG:8,rolle:'extras'}
   ],notizen:'Pasta kochen. Hack krümelig anbraten, Paprika dazu, Tomaten aufgießen, 10 Min. köcheln. Abschmecken, über die Pasta geben.'},
-  {name:'Buddha Bowl',cat:'bowl',img:'rezeptbilder/buddha-bowl.jpg',totalPortions:1,ingredients:[
+  {name:'Buddha Bowl',cat:'bowl',img:'rezeptbilder/bowl.jpg',totalPortions:1,ingredients:[
     {foodId:'tofu',amountG:120,rolle:'protein'},{foodId:'spinach',amountG:50,rolle:'veg'},
     {foodId:'carrot',amountG:60,rolle:'veg'},{foodId:'avocado',amountG:40,rolle:'veg'},
     {foodId:'quinoa',amountG:60,rolle:'beilage'},{foodId:'olive_oil',amountG:5,rolle:'extras'}
@@ -776,7 +776,7 @@ const RECIPE_TEMPLATES = [
     {foodId:'tomato',amountG:80,rolle:'veg'},{foodId:'cucumber',amountG:60,rolle:'veg'},
     {foodId:'feta',amountG:30,rolle:'extras'},{foodId:'olive_oil',amountG:10,rolle:'extras'}
   ],notizen:'Hähnchen würzen und in der Pfanne braten, in Streifen schneiden. Salat, Tomaten und Gurke anrichten. Feta darüber bröseln, mit Olivenöl beträufeln.'},
-  {name:'Ofengemüse mit Beilage',cat:'ofen',img:'rezeptbilder/ofengemuese.jpg',totalPortions:1,ingredients:[
+  {name:'Ofengemüse mit Beilage',cat:'ofen',img:'rezeptbilder/ofen.jpg',totalPortions:1,ingredients:[
     {foodId:'chicken',amountG:150,rolle:'protein'},{foodId:'sweetpotato',amountG:150,rolle:'veg'},
     {foodId:'broccoli',amountG:100,rolle:'veg'},{foodId:'bellpepper',amountG:80,rolle:'veg'},
     {foodId:'olive_oil',amountG:10,rolle:'extras'}
