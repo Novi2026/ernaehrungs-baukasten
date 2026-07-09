@@ -1,4 +1,4 @@
-const CACHE_NAME = 'eb-cache-v19';
+const CACHE_NAME = 'eb-cache-v20';
 const ASSETS = [
   './',
   './index.html',
