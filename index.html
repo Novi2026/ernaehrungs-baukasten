@@ -269,6 +269,15 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .recipe-expand.open{display:block}
 .recipe-ing-list{font-size:0.82rem;margin-bottom:10px}
 .recipe-ing-list div{padding:3px 0;border-bottom:1px solid var(--border)}
+.recipe-slot-group{margin-bottom:8px}
+.recipe-slot-label{font-size:0.72rem;font-weight:700;text-transform:uppercase;color:var(--text-light);margin-bottom:2px;display:flex;align-items:center;gap:4px}
+.recipe-slot-item{display:flex;align-items:center;justify-content:space-between;padding:4px 0}
+.recipe-slot-item .swap-btn{font-size:0.7rem;padding:2px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text-light);cursor:pointer}
+.recipe-slot-item .swap-btn:hover{border-color:var(--primary);color:var(--primary)}
+.recipe-template-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.recipe-template-btn{padding:10px;border:1.5px solid var(--border);border-radius:8px;background:var(--card);cursor:pointer;text-align:left;font-size:0.82rem;font-weight:600;transition:all .2s}
+.recipe-template-btn:hover{border-color:var(--primary);background:var(--primary-light)}
+.recipe-template-btn small{display:block;font-weight:400;color:var(--text-light);font-size:0.72rem;margin-top:2px}
 .recipe-totals{display:flex;gap:8px;flex-wrap:wrap;padding:8px 10px;background:var(--card);border-radius:8px;font-size:0.78rem;color:var(--text-light);margin-bottom:8px}
 .recipe-totals strong{color:var(--text)}
 .recipe-from-pantry{padding:16px 20px;background:var(--card);border-top:1px solid var(--border)}
@@ -573,14 +582,16 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 <div class="modal-overlay" id="recipeModal">
   <div class="modal" style="max-width:540px">
     <h3 id="recipeModalTitle">Neues Rezept</h3>
+    <div id="rmTemplates"></div>
     <div class="form-group"><label>Rezeptname</label><input id="rmName" placeholder="z.B. Chili con Carne"></div>
-    <div class="form-group"><label>Gesamtportionen</label>
+    <div class="form-group"><label>Portionen</label>
       <div class="stepper" style="display:inline-flex"><button onclick="stepVal('rmPortions',-1,1)">-</button><input type="number" id="rmPortions" value="4" min="1" max="20" step="1"><button onclick="stepVal('rmPortions',1,1)">+</button></div>
     </div>
     <div class="form-group"><label>Zutaten</label><div id="rmIngredients"></div>
       <button style="margin-top:6px;padding:6px 12px;border-radius:8px;font-size:0.78rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--bg);color:var(--text-light)" onclick="addRecipeIngRow()">+ Zutat</button>
     </div>
     <div class="recipe-totals" id="rmTotals"></div>
+    <div class="form-group"><label>Notizen (optional)</label><textarea id="rmNotizen" rows="2" placeholder="Zubereitungshinweise..." style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:0.85rem;font-family:inherit;resize:vertical"></textarea></div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeRecipeModal()">Abbrechen</button>
       <button class="btn-save" onclick="saveRecipe()">Speichern</button>
@@ -714,6 +725,51 @@ const CATEGORIES = [
   {id:'protein',label:'Protein'},{id:'legumes',label:'Hülsenfr.'},
   {id:'grains',label:'Getreide'},{id:'dairy',label:'Milch'},
   {id:'fats',label:'Fette'},{id:'other',label:'Sonstiges'},
+];
+
+const RECIPE_ROLES = [
+  {id:'protein',label:'Protein',icon:'🥩',cats:['protein','legumes']},
+  {id:'veg',label:'Gemüse',icon:'🥦',cats:['veg']},
+  {id:'beilage',label:'Beilage',icon:'🍚',cats:['grains']},
+  {id:'extras',label:'Extras',icon:'🫙',cats:['fats','dairy','other','fruit']}
+];
+
+const RECIPE_TEMPLATES = [
+  {name:'Gemüsepfanne',totalPortions:4,ingredients:[
+    {foodId:'chicken',amountG:400,rolle:'protein'},{foodId:'bellpepper',amountG:200,rolle:'veg'},
+    {foodId:'zucchini',amountG:200,rolle:'veg'},{foodId:'rice',amountG:320,rolle:'beilage'},
+    {foodId:'olive_oil',amountG:15,rolle:'extras'}
+  ],notizen:'Gemüse knackig anbraten, Reis separat kochen.'},
+  {name:'Pasta mit Sauce',totalPortions:4,ingredients:[
+    {foodId:'beef',amountG:300,rolle:'protein'},{foodId:'tomato',amountG:300,rolle:'veg'},
+    {foodId:'bellpepper',amountG:150,rolle:'veg'},{foodId:'pasta',amountG:320,rolle:'beilage'},
+    {foodId:'olive_oil',amountG:15,rolle:'extras'}
+  ],notizen:'Hack anbraten, Gemüse dazu, mit Tomaten köcheln.'},
+  {name:'Buddha Bowl',totalPortions:2,ingredients:[
+    {foodId:'tofu',amountG:200,rolle:'protein'},{foodId:'spinach',amountG:100,rolle:'veg'},
+    {foodId:'carrot',amountG:100,rolle:'veg'},{foodId:'avocado',amountG:75,rolle:'veg'},
+    {foodId:'quinoa',amountG:120,rolle:'beilage'},{foodId:'olive_oil',amountG:10,rolle:'extras'}
+  ],notizen:'Quinoa kochen, Tofu anbraten, alles in Bowl anrichten.'},
+  {name:'Salat mit Protein',totalPortions:2,ingredients:[
+    {foodId:'chicken',amountG:250,rolle:'protein'},{foodId:'iceberg',amountG:200,rolle:'veg'},
+    {foodId:'tomato',amountG:150,rolle:'veg'},{foodId:'cucumber',amountG:100,rolle:'veg'},
+    {foodId:'feta',amountG:60,rolle:'extras'},{foodId:'olive_oil',amountG:15,rolle:'extras'}
+  ],notizen:'Hähnchen braten, Salat anrichten, Dressing drüber.'},
+  {name:'Ofengemüse mit Beilage',totalPortions:4,ingredients:[
+    {foodId:'chicken',amountG:400,rolle:'protein'},{foodId:'sweetpotato',amountG:400,rolle:'veg'},
+    {foodId:'broccoli',amountG:300,rolle:'veg'},{foodId:'bellpepper',amountG:200,rolle:'veg'},
+    {foodId:'olive_oil',amountG:20,rolle:'extras'}
+  ],notizen:'Alles würzen, bei 200°C ca. 25 Min. im Ofen.'},
+  {name:'Eintopf / Suppe',totalPortions:6,ingredients:[
+    {foodId:'red_lentils',amountG:200,rolle:'protein'},{foodId:'carrot',amountG:200,rolle:'veg'},
+    {foodId:'zucchini',amountG:200,rolle:'veg'},{foodId:'potato',amountG:300,rolle:'beilage'},
+    {foodId:'olive_oil',amountG:15,rolle:'extras'}
+  ],notizen:'Alles in Topf, mit Brühe aufgießen, 20 Min. köcheln.'},
+  {name:'Wrap / Tortilla',totalPortions:4,ingredients:[
+    {foodId:'chicken',amountG:300,rolle:'protein'},{foodId:'iceberg',amountG:100,rolle:'veg'},
+    {foodId:'tomato',amountG:150,rolle:'veg'},{foodId:'bellpepper',amountG:100,rolle:'veg'},
+    {foodId:'gouda',amountG:60,rolle:'extras'}
+  ],notizen:'Hähnchen braten, alles in Tortilla wickeln.'}
 ];
 
 // ============================================================
@@ -1656,9 +1712,22 @@ function renderRecipes() {
   if (recipes.length===0) { h='<div class="plan-empty">Noch keine Rezepte erstellt.</div>'; }
   else { recipes.forEach(r => {
     const ex=expandedRecipe===r.id, n=recipeNutritionPerPortion(r);
-    h+='<div class="recipe-card"><div class="recipe-main" onclick="toggleRecipeExpand(\''+r.id+'\')"><div><div class="recipe-name">'+r.name+'</div><div class="recipe-meta">'+r.totalPortions+' Portionen | '+r.ingredients.length+' Zutaten | '+n.kcal+'kcal/Port.</div></div><button class="food-add-btn">'+(ex?'&minus;':'+')+'</button></div>';
+    h+='<div class="recipe-card"><div class="recipe-main" onclick="toggleRecipeExpand(\''+r.id+'\')"><div><div class="recipe-name">'+r.name+'</div><div class="recipe-meta">'+r.totalPortions+' Portionen | '+r.ingredients.length+' Zutaten | '+n.kcal+' kcal/Port.</div></div><button class="food-add-btn">'+(ex?'&minus;':'+')+'</button></div>';
     if (ex) {
-      h+='<div class="recipe-expand open"><div class="recipe-ing-list">'+r.ingredients.map(ing=>{const f=getFood(ing.foodId);return '<div>'+ing.amountG+'g '+(f?f.n:'?')+'</div>';}).join('')+'</div>';
+      h+='<div class="recipe-expand open">';
+      // Group ingredients by rolle
+      var grouped={};
+      r.ingredients.forEach(function(ing){var role=ing.rolle||'extras';if(!grouped[role])grouped[role]=[];grouped[role].push(ing);});
+      RECIPE_ROLES.forEach(function(role){
+        var items=grouped[role.id];if(!items||items.length===0)return;
+        h+='<div class="recipe-slot-group"><div class="recipe-slot-label">'+role.icon+' '+role.label+'</div>';
+        items.forEach(function(ing,ii){
+          var f=getFood(ing.foodId);
+          h+='<div class="recipe-slot-item"><span>'+ing.amountG+'g '+(f?f.n:'?')+'</span><button class="swap-btn" onclick="event.stopPropagation();openSwapUI(\''+r.id+'\',\''+role.id+'\','+r.ingredients.indexOf(ing)+')">&#8644;</button></div>';
+        });
+        h+='</div>';
+      });
+      if(r.notizen) h+='<div style="font-size:0.8rem;color:var(--text-light);margin:8px 0;font-style:italic">'+r.notizen+'</div>';
       h+='<div class="recipe-totals">Pro Portion: <strong>'+n.kcal+' kcal</strong> | '+n.p+'g E | '+n.f+'g F | '+n.c+'g KH</div>';
       h+='<button class="btn-add" onclick="addRecipeToShop(\''+r.id+'\')">Zutaten einkaufen</button>';
       h+='<div class="food-expand-actions"><button onclick="addRecipeToPlan(\''+r.id+'\')">Zum Wochenplan</button><button onclick="openRecipeModal(\''+r.id+'\')">Bearbeiten</button><button class="btn-delete" onclick="deleteRecipe(\''+r.id+'\')">Löschen</button></div></div>';
@@ -1871,46 +1940,115 @@ document.getElementById('customModal').addEventListener('click',function(e){if(e
 // ===== RECIPE MODAL =====
 function openRecipeModal(recipeId) {
   editingRecipeId=recipeId||null; recipeIngRows=[];
-  if(editingRecipeId){const r=getRecipe(editingRecipeId);if(!r)return;document.getElementById('rmName').value=r.name;document.getElementById('rmPortions').value=r.totalPortions;recipeIngRows=r.ingredients.map(i=>({foodId:i.foodId,amountG:i.amountG}));document.getElementById('recipeModalTitle').textContent='Rezept bearbeiten';}
-  else{document.getElementById('rmName').value='';document.getElementById('rmPortions').value='4';recipeIngRows=[{foodId:'',amountG:100}];document.getElementById('recipeModalTitle').textContent='Neues Rezept';}
+  if(editingRecipeId){
+    const r=getRecipe(editingRecipeId);if(!r)return;
+    document.getElementById('rmName').value=r.name;
+    document.getElementById('rmPortions').value=r.totalPortions;
+    document.getElementById('rmNotizen').value=r.notizen||'';
+    recipeIngRows=r.ingredients.map(function(i){return{foodId:i.foodId,amountG:i.amountG,rolle:i.rolle||'extras'};});
+    document.getElementById('recipeModalTitle').textContent='Rezept bearbeiten';
+  } else {
+    document.getElementById('rmName').value='';document.getElementById('rmPortions').value='4';
+    document.getElementById('rmNotizen').value='';
+    recipeIngRows=[{foodId:'',amountG:100,rolle:'protein'}];
+    document.getElementById('recipeModalTitle').textContent='Neues Rezept';
+  }
+  renderTemplateButtons();
   renderRecipeIngRows(); document.getElementById('recipeModal').classList.add('open');
 }
 function closeRecipeModal(){document.getElementById('recipeModal').classList.remove('open');editingRecipeId=null;}
 document.getElementById('recipeModal').addEventListener('click',function(e){if(e.target===this)closeRecipeModal();});
-function addRecipeIngRow(){recipeIngRows.push({foodId:'',amountG:100});renderRecipeIngRows();}
+
+function renderTemplateButtons() {
+  if(editingRecipeId){document.getElementById('rmTemplates').innerHTML='';return;}
+  var h='<div style="margin-bottom:12px"><div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--text-muted);margin-bottom:6px">Vorlage wählen</div><div class="recipe-template-grid">';
+  RECIPE_TEMPLATES.forEach(function(t,i){
+    h+='<button class="recipe-template-btn" onclick="loadTemplate('+i+')">'+t.name+'</button>';
+  });
+  h+='</div></div>';
+  document.getElementById('rmTemplates').innerHTML=h;
+}
+
+function loadTemplate(idx) {
+  var t=RECIPE_TEMPLATES[idx];if(!t)return;
+  document.getElementById('rmName').value=t.name;
+  document.getElementById('rmPortions').value=t.totalPortions;
+  document.getElementById('rmNotizen').value=t.notizen||'';
+  recipeIngRows=t.ingredients.map(function(i){return{foodId:i.foodId,amountG:i.amountG,rolle:i.rolle||'extras'};});
+  renderRecipeIngRows();
+  showToast('Vorlage "'+t.name+'" geladen');
+}
+
+function addRecipeIngRow(){recipeIngRows.push({foodId:'',amountG:100,rolle:'protein'});renderRecipeIngRows();}
 function removeRecipeIngRow(idx){recipeIngRows.splice(idx,1);renderRecipeIngRows();}
 
 function renderRecipeIngRows() {
-  const af=foods.filter(f=>!deletedFoods.has(f.id)).sort((a,b)=>a.n.localeCompare(b.n,'de'));
-  const opts='<option value="">-- Wählen --</option>'+af.map(f=>'<option value="'+f.id+'">'+f.n+'</option>').join('');
-  document.getElementById('rmIngredients').innerHTML=recipeIngRows.map((row,i)=>
-    '<div class="recipe-ing-row"><select onchange="recipeIngRows['+i+'].foodId=this.value;updateRecipeTotals()">'+opts.replace('value="'+row.foodId+'"','value="'+row.foodId+'" selected')+'</select><input type="number" value="'+row.amountG+'" min="1" step="10" placeholder="g" onchange="recipeIngRows['+i+'].amountG=parseInt(this.value)||0;updateRecipeTotals()"><span style="font-size:0.78rem;color:var(--text-light)">g</span><button onclick="removeRecipeIngRow('+i+')">&times;</button></div>'
-  ).join('');
+  var af=foods.filter(function(f){return !deletedFoods.has(f.id);}).sort(function(a,b){return a.n.localeCompare(b.n,'de');});
+  var foodOpts='<option value="">-- Wählen --</option>'+af.map(function(f){return '<option value="'+f.id+'">'+f.n+'</option>';}).join('');
+  var roleOpts=RECIPE_ROLES.map(function(r){return '<option value="'+r.id+'">'+r.icon+' '+r.label+'</option>';}).join('');
+  document.getElementById('rmIngredients').innerHTML=recipeIngRows.map(function(row,i){
+    return '<div class="recipe-ing-row" style="display:flex;gap:4px;align-items:center;margin-bottom:4px">'
+      +'<select style="width:80px;flex-shrink:0" onchange="recipeIngRows['+i+'].rolle=this.value">'+roleOpts.replace('value="'+row.rolle+'"','value="'+row.rolle+'" selected')+'</select>'
+      +'<select style="flex:1" onchange="recipeIngRows['+i+'].foodId=this.value;updateRecipeTotals()">'+foodOpts.replace('value="'+row.foodId+'"','value="'+row.foodId+'" selected')+'</select>'
+      +'<input type="number" value="'+row.amountG+'" min="1" step="10" placeholder="g" style="width:55px" onchange="recipeIngRows['+i+'].amountG=parseInt(this.value)||0;updateRecipeTotals()">'
+      +'<span style="font-size:0.78rem;color:var(--text-light)">g</span>'
+      +'<button onclick="removeRecipeIngRow('+i+')" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--danger);padding:2px 4px">&times;</button></div>';
+  }).join('');
   updateRecipeTotals();
 }
 
 function updateRecipeTotals() {
-  const portions=parseInt(document.getElementById('rmPortions')?.value)||1;
-  let t={kcal:0,p:0,f:0,c:0};
-  recipeIngRows.forEach(row=>{const food=getFood(row.foodId);if(!food)return;const m=row.amountG/100;t.kcal+=food.k*m;t.p+=food.p*m;t.f+=food.f*m;t.c+=food.c*m;});
+  var portions=parseInt(document.getElementById('rmPortions')?.value)||1;
+  var t={kcal:0,p:0,f:0,c:0};
+  recipeIngRows.forEach(function(row){var food=getFood(row.foodId);if(!food)return;var m=row.amountG/100;t.kcal+=food.k*m;t.p+=food.p*m;t.f+=food.f*m;t.c+=food.c*m;});
   document.getElementById('rmTotals').innerHTML='Pro Portion: <strong>'+Math.round(t.kcal/portions)+' kcal</strong> | '+Math.round(t.p/portions)+'g E | '+Math.round(t.f/portions)+'g F | '+Math.round(t.c/portions)+'g KH';
 }
 
 function saveRecipe() {
-  const name=document.getElementById('rmName').value.trim();
+  var name=document.getElementById('rmName').value.trim();
   if(!name){showToast('Bitte Rezeptname eingeben');return;}
-  const totalPortions=parseInt(document.getElementById('rmPortions').value)||4;
-  const ingredients=recipeIngRows.filter(r=>r.foodId&&r.amountG>0).map(r=>({foodId:r.foodId,amountG:r.amountG}));
+  var totalPortions=parseInt(document.getElementById('rmPortions').value)||4;
+  var notizen=document.getElementById('rmNotizen').value.trim();
+  var ingredients=recipeIngRows.filter(function(r){return r.foodId&&r.amountG>0;}).map(function(r){return{foodId:r.foodId,amountG:r.amountG,rolle:r.rolle||'extras'};});
   if(ingredients.length===0){showToast('Mindestens eine Zutat');return;}
-  if(editingRecipeId){const r=getRecipe(editingRecipeId);if(r){r.name=name;r.totalPortions=totalPortions;r.ingredients=ingredients;}showToast(name+' aktualisiert!');}
-  else{recipes.push({id:'recipe_'+Date.now(),name,totalPortions,ingredients});showToast(name+' erstellt!');}
+  if(editingRecipeId){var r=getRecipe(editingRecipeId);if(r){r.name=name;r.totalPortions=totalPortions;r.ingredients=ingredients;r.notizen=notizen;}showToast(name+' aktualisiert!');}
+  else{recipes.push({id:'recipe_'+Date.now(),name:name,totalPortions:totalPortions,ingredients:ingredients,notizen:notizen});showToast(name+' erstellt!');}
   closeRecipeModal(); render();
 }
 
 function deleteRecipe(recipeId) {
-  const r=getRecipe(recipeId);if(!r||!confirm(r.name+' löschen?'))return;
-  recipes=recipes.filter(rc=>rc.id!==recipeId);plan=plan.filter(p=>p.recipeId!==recipeId);
+  var r=getRecipe(recipeId);if(!r||!confirm(r.name+' löschen?'))return;
+  recipes=recipes.filter(function(rc){return rc.id!==recipeId;});plan=plan.filter(function(p){return p.recipeId!==recipeId;});
   expandedRecipe=null;showToast(r.name+' gelöscht');render();
+}
+
+// Swap UI: replace an ingredient in a recipe
+function openSwapUI(recipeId,roleId,ingIdx) {
+  var r=getRecipe(recipeId);if(!r)return;
+  var role=RECIPE_ROLES.find(function(ro){return ro.id===roleId;});if(!role)return;
+  var currentIng=r.ingredients[ingIdx];
+  // Filter foods by role categories
+  var candidates=foods.filter(function(f){return !deletedFoods.has(f.id)&&role.cats.indexOf(f.cat)>=0;}).sort(function(a,b){return a.n.localeCompare(b.n,'de');});
+  var h='<div class="modal-overlay open" id="swapOverlay" onclick="if(event.target===this)this.remove()"><div class="modal" style="max-width:400px"><h3>'+role.icon+' '+role.label+' tauschen</h3>';
+  h+='<div style="max-height:300px;overflow-y:auto">';
+  candidates.forEach(function(f){
+    var isCurrent=f.id===currentIng.foodId;
+    h+='<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 4px;border-bottom:1px solid var(--border);'+(isCurrent?'background:var(--primary-light);border-radius:6px;':'')+'">';
+    h+='<div><strong>'+f.n+'</strong><div style="font-size:0.72rem;color:var(--text-muted)">'+f.k+' kcal | '+f.p+'g E | '+f.f+'g F | '+f.c+'g KH /100g</div></div>';
+    if(!isCurrent) h+='<button class="btn-add" style="font-size:0.75rem;padding:4px 10px" onclick="doSwap(\''+recipeId+'\','+ingIdx+',\''+f.id+'\')">Wählen</button>';
+    else h+='<span style="font-size:0.72rem;color:var(--primary);font-weight:600">Aktuell</span>';
+    h+='</div>';
+  });
+  h+='</div><div class="modal-actions"><button class="btn-cancel" onclick="document.getElementById(\'swapOverlay\').remove()">Abbrechen</button></div></div></div>';
+  document.body.insertAdjacentHTML('beforeend',h);
+}
+
+function doSwap(recipeId,ingIdx,newFoodId) {
+  var r=getRecipe(recipeId);if(!r||!r.ingredients[ingIdx])return;
+  r.ingredients[ingIdx].foodId=newFoodId;
+  var el=document.getElementById('swapOverlay');if(el)el.remove();
+  saveState(); renderRecipes();
+  var f=getFood(newFoodId);showToast('Getauscht zu '+(f?f.n:''));
 }
 
 // ===== ARCHIVE =====
@@ -2034,6 +2172,15 @@ function toggleDarkMode(on) {
 // ===== INIT =====
 const hasProfile = loadState();
 migrateCustomToStandard();
+// Seed template recipes if none exist
+if (recipes.length===0) {
+  RECIPE_TEMPLATES.forEach(function(t,i){
+    recipes.push({id:'tmpl_'+i+'_'+Date.now(),name:t.name,totalPortions:t.totalPortions,
+      ingredients:t.ingredients.map(function(ing){return{foodId:ing.foodId,amountG:ing.amountG,rolle:ing.rolle};}),
+      notizen:t.notizen||''});
+  });
+  if(hasProfile) saveState();
+}
 if (hasProfile && profile) showMainApp();
 else showOnboarding();
 
