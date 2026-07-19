@@ -703,6 +703,10 @@ const FOODS_BASE = [
   {id:'ground_turkey',n:'Putenhackfleisch (gewürzt)',cat:'protein',k:161,p:17.4,f:9.8,c:0.7,fb:0,pr:2.49,prRef:400,po:200,mg:[],unit:'g',pieceWeight:null,packageSize:400},
   {id:'ground_beef',n:'Rinderhackfleisch (mager)',cat:'protein',k:125,p:20,f:5,c:0,fb:0,pr:5.99,prRef:400,po:200,mg:[],unit:'g',pieceWeight:null,packageSize:400},
   {id:'veg_broth',n:'Gemüsebrühe (zubereitet)',cat:'other',k:4,p:0.1,f:0.1,c:0.5,fb:0,pr:0.15,prRef:1000,po:250,mg:[],unit:'ml',pieceWeight:null,packageSize:1000},
+  {id:'onion',n:'Zwiebeln',cat:'veg',k:28,p:1.2,f:0.2,c:4.9,fb:1.4,pr:1.99,prRef:1000,po:80,mg:[],unit:'stueck',pieceWeight:75,packageSize:1000},
+  {id:'garlic',n:'Knoblauch (frisch)',cat:'veg',k:141,p:6.1,f:0.1,c:28.4,fb:1.8,pr:0.79,prRef:100,po:5,mg:[],unit:'g',pieceWeight:null,packageSize:100},
+  {id:'tomato_chunks',n:'Tomaten stückig (Dose)',cat:'veg',k:24,p:1.2,f:0.2,c:3.9,fb:1.1,pr:0.99,prRef:400,po:200,mg:[],unit:'g',pieceWeight:null,packageSize:400},
+  {id:'tomato_paste',n:'Tomatenmark',cat:'veg',k:91,p:4.8,f:0.5,c:14.7,fb:4,pr:1.29,prRef:200,po:30,mg:[],unit:'g',pieceWeight:null,packageSize:200},
   {id:'pear',n:'Birnen',cat:'fruit',k:58,p:0.4,f:0.1,c:15,fb:3.1,pr:2,prRef:1000,po:150,mg:[],unit:'stueck',pieceWeight:180,packageSize:1000},
   {id:'watermelon',n:'Wassermelone',cat:'fruit',k:39,p:0.6,f:0.2,c:8,fb:0.2,pr:1.49,prRef:1000,po:100,mg:['fruit'],unit:'g',pieceWeight:null,packageSize:1000},
   {id:'broccoli',n:'Brokkoli',cat:'veg',k:34,p:2.8,f:0.4,c:7,fb:2.6,pr:2.5,prRef:1000,po:200,mg:['greens'],unit:'g',pieceWeight:null,packageSize:500},
@@ -813,6 +817,7 @@ const RECIPE_ROLES = [
 ];
 
 const RECIPE_CATEGORIES = [
+  {id:'fruehstueck',label:'Frühstück',icon:'🥞'},
   {id:'pfanne',label:'Pfanne',icon:'🍳'},
   {id:'ofen',label:'Ofen',icon:'🔥'},
   {id:'salat',label:'Salat',icon:'🥗'},
@@ -824,6 +829,21 @@ const RECIPE_CATEGORIES = [
 ];
 
 const RECIPE_TEMPLATES = [
+  {name:'PowerPorridge',cat:'fruehstueck',img:'rezeptbilder/porridge.jpg',totalPortions:1,ingredients:[
+    {foodId:'dinkel',amountG:15,rolle:'beilage'},{foodId:'hafer',amountG:15,rolle:'beilage'},
+    {foodId:'flaxseed',amountG:5,rolle:'extras'},{foodId:'hanfsamen',amountG:5,rolle:'extras'},
+    {foodId:'chia',amountG:5,rolle:'extras'},{foodId:'apple',amountG:50,rolle:'extras'},
+    {foodId:'mandelmilch',amountG:200,rolle:'extras'},{foodId:'banana',amountG:100,rolle:'extras'},
+    {foodId:'sonnenblumenkerne',amountG:5,rolle:'extras'},{foodId:'kuerbiskerne',amountG:5,rolle:'extras'},
+    {foodId:'dark_choc',amountG:7,rolle:'extras'},{foodId:'fruchtmus',amountG:80,rolle:'extras'}
+  ],notizen:'Basis für 3 Portionen: 45g Dinkel, 45g Hafer, je 15g Leinsamen (geschrotet), Hanfsamen & Chiasamen, 150g Apfel (gewürfelt), 600ml Mandelmilch ungesüßt.\n\nHerd: Alles aufkochen, 3-5 Min. bei niedriger Hitze köcheln. Mikrowelle: 4 Min. bei 800W, umrühren, weitere 3,5 Min. (aufpassen, dass nichts überläuft!). Danach 10-15 Min. quellen lassen.\n\nPro Portion toppen: 1 kleine Banane (100g), 5g Sonnenblumenkerne, 5g Kürbiskerne, 7g Zartbitterschokolade (70-80%), 80g Fruchtmus nach Geschmack.'},
+  {name:'Bauerntopf',cat:'suppe',img:'rezeptbilder/bauern.jpg',totalPortions:1,ingredients:[
+    {foodId:'ground_beef',amountG:160,rolle:'protein'},{foodId:'potato',amountG:200,rolle:'beilage'},
+    {foodId:'carrot',amountG:60,rolle:'veg'},{foodId:'bellpepper',amountG:100,rolle:'veg'},
+    {foodId:'onion',amountG:30,rolle:'veg'},{foodId:'garlic',amountG:3,rolle:'veg'},
+    {foodId:'tomato_chunks',amountG:160,rolle:'veg'},{foodId:'tomato_paste',amountG:10,rolle:'extras'},
+    {foodId:'veg_broth',amountG:120,rolle:'extras'},{foodId:'honey',amountG:4,rolle:'extras'}
+  ],notizen:'Mengen für 5 Portionen: 1kg Kartoffeln, 300g Möhren (ca. 4 St.), 500g Paprika (ca. 4 St.), 150g Zwiebeln (ca. 2 St.), 10-20g frischer Knoblauch (2-4 Zehen), 800g Rinderhack mager, 800g stückige Tomaten (Dose), 50g Tomatenmark, 600ml Gemüsebrühe, 20g Honig (2 TL).\n\nKartoffeln und Möhren schälen und in kleine Stücke schneiden. Paprika und Zwiebeln ebenfalls klein schneiden. Öl in einer Pfanne erhitzen, Hackfleisch krümelig braten, Zwiebeln mit anschwitzen, dann Knoblauch dazupressen und kurz mitbraten. Mit Dosentomaten, Tomatenmark und Brühe ablöschen. Kartoffeln, Möhren und Paprika hinzufügen. Zugedeckt ca. 40 Min. bei mittlerer Hitze köcheln lassen. Mit Salz, Pfeffer und Kräutern abschmecken.\n\nPerfekt zum Einfrieren als Meal Prep!'},
   {name:'Weißkohleintopf',cat:'suppe',img:'rezeptbilder/kohl.jpg',totalPortions:1,ingredients:[
     {foodId:'ground_turkey',amountG:67,rolle:'protein'},{foodId:'ground_beef',amountG:67,rolle:'protein'},
     {foodId:'pointed_cabbage',amountG:300,rolle:'veg'},{foodId:'potato',amountG:167,rolle:'beilage'},

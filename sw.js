@@ -1,4 +1,4 @@
-const CACHE_NAME = 'eb-cache-v29';
+const CACHE_NAME = 'eb-cache-v32';
 const ASSETS = [
   './',
   './index.html',
@@ -12,7 +12,9 @@ const ASSETS = [
   './rezeptbilder/ofen.jpg',
   './rezeptbilder/eintopf.jpg',
   './rezeptbilder/wrap.jpg',
-  './rezeptbilder/kohl.jpg'
+  './rezeptbilder/kohl.jpg',
+  './rezeptbilder/porridge.jpg',
+  './rezeptbilder/bauern.jpg'
 ];
 
 self.addEventListener('install', e => {
