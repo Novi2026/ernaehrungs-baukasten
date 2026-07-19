@@ -830,7 +830,7 @@ const RECIPE_CATEGORIES = [
 ];
 
 const RECIPE_TEMPLATES = [
-  {name:'PowerPorridge',cat:'fruehstueck',img:'rezeptbilder/porridge.jpg',totalPortions:1,ingredients:[
+  {name:'PowerPorridge',cat:'fruehstueck',img:'rezeptbilder/porridge.jpg',totalPortions:1,recPortions:3,ingredients:[
     {foodId:'dinkel',amountG:15,rolle:'beilage'},{foodId:'hafer',amountG:15,rolle:'beilage'},
     {foodId:'flaxseed',amountG:5,rolle:'extras'},{foodId:'hanfsamen',amountG:5,rolle:'extras'},
     {foodId:'chia',amountG:5,rolle:'extras'},{foodId:'apple',amountG:50,rolle:'extras'},
@@ -838,14 +838,14 @@ const RECIPE_TEMPLATES = [
     {foodId:'sonnenblumenkerne',amountG:5,rolle:'extras'},{foodId:'kuerbiskerne',amountG:5,rolle:'extras'},
     {foodId:'dark_choc',amountG:7,rolle:'extras'},{foodId:'fruchtmus',amountG:80,rolle:'extras'}
   ],notizen:'Basis für 3 Portionen: 45g Dinkel, 45g Hafer, je 15g Leinsamen (geschrotet), Hanfsamen & Chiasamen, 150g Apfel (gewürfelt), 600ml Mandelmilch ungesüßt.\n\nHerd: Alles aufkochen, 3-5 Min. bei niedriger Hitze köcheln. Mikrowelle: 4 Min. bei 800W, umrühren, weitere 3,5 Min. (aufpassen, dass nichts überläuft!). Danach 10-15 Min. quellen lassen.\n\nPro Portion toppen: 1 kleine Banane (100g), 5g Sonnenblumenkerne, 5g Kürbiskerne, 7g Zartbitterschokolade (70-80%), 80g Fruchtmus nach Geschmack.\n\nHält sich super ein paar Tage im Kühlschrank. Einfach kurz erwärmen, umrühren und toppen.'},
-  {name:'Bauerntopf',cat:'suppe',img:'rezeptbilder/bauern.jpg',totalPortions:1,ingredients:[
+  {name:'Bauerntopf',cat:'suppe',img:'rezeptbilder/bauern.jpg',totalPortions:1,recPortions:5,ingredients:[
     {foodId:'ground_beef',amountG:160,rolle:'protein'},{foodId:'potato',amountG:200,rolle:'beilage'},
     {foodId:'carrot',amountG:60,rolle:'veg'},{foodId:'bellpepper',amountG:100,rolle:'veg'},
     {foodId:'onion',amountG:30,rolle:'veg'},{foodId:'garlic',amountG:3,rolle:'veg'},
     {foodId:'tomato_chunks',amountG:160,rolle:'veg'},{foodId:'tomato_paste',amountG:10,rolle:'extras'},
     {foodId:'veg_broth',amountG:120,rolle:'extras'},{foodId:'honey',amountG:4,rolle:'extras'}
   ],notizen:'Mengen für 5 Portionen: 1kg Kartoffeln, 300g Möhren (ca. 4 St.), 500g Paprika (ca. 4 St.), 150g Zwiebeln (ca. 2 St.), 10-20g frischer Knoblauch (2-4 Zehen), 800g Rinderhack mager, 800g stückige Tomaten (Dose), 50g Tomatenmark, 600ml Gemüsebrühe, 20g Honig (2 TL).\n\nKartoffeln und Möhren schälen und in kleine Stücke schneiden. Paprika und Zwiebeln ebenfalls klein schneiden. Öl in einer Pfanne erhitzen, Hackfleisch krümelig braten, Zwiebeln mit anschwitzen, dann Knoblauch dazupressen und kurz mitbraten. Mit Dosentomaten, Tomatenmark und Brühe ablöschen. Kartoffeln, Möhren und Paprika hinzufügen. Zugedeckt ca. 40 Min. bei mittlerer Hitze köcheln lassen. Mit Salz, Pfeffer und Kräutern abschmecken.\n\nPerfekt zum Einfrieren als Meal Prep!'},
-  {name:'Weißkohleintopf',cat:'suppe',img:'rezeptbilder/kohl.jpg',totalPortions:1,ingredients:[
+  {name:'Weißkohleintopf',cat:'suppe',img:'rezeptbilder/kohl.jpg',totalPortions:1,recPortions:6,ingredients:[
     {foodId:'ground_turkey',amountG:67,rolle:'protein'},{foodId:'ground_beef',amountG:67,rolle:'protein'},
     {foodId:'pointed_cabbage',amountG:300,rolle:'veg'},{foodId:'potato',amountG:167,rolle:'beilage'},
     {foodId:'veg_broth',amountG:167,rolle:'extras'}
@@ -885,7 +885,7 @@ const RECIPE_TEMPLATES = [
     {foodId:'olive_oil',amountG:10,rolle:'extras'},{foodId:'quark',amountG:100,rolle:'extras'},
     {foodId:'garlic',amountG:2,rolle:'extras'}
   ],notizen:'Ofen auf 200°C Umluft vorheizen. Süßkartoffel, Paprika, Zucchini und Zwiebel in Stücke schneiden, Brokkoli in Röschen teilen. Mit Öl, Paprikapulver, Salz und Pfeffer mischen, auf ein Blech. Hähnchen würzen und mittig dazulegen. 25-30 Min. backen, bis alles goldbraun ist.\n\nKräuterquark: Quark mit gepresstem Knoblauch, Salz, Pfeffer und Kräutern (TK oder frisch) verrühren, ggf. Schuss Mineralwasser für die Cremigkeit.'},
-  {name:'Rote-Linsen-Eintopf',cat:'suppe',img:'rezeptbilder/eintopf.jpg',totalPortions:1,ingredients:[
+  {name:'Rote-Linsen-Eintopf',cat:'suppe',img:'rezeptbilder/eintopf.jpg',totalPortions:1,recPortions:4,ingredients:[
     {foodId:'red_lentils',amountG:70,rolle:'protein'},{foodId:'carrot',amountG:80,rolle:'veg'},
     {foodId:'zucchini',amountG:80,rolle:'veg'},{foodId:'onion',amountG:30,rolle:'veg'},
     {foodId:'garlic',amountG:3,rolle:'veg'},{foodId:'potato',amountG:100,rolle:'beilage'},
@@ -1728,8 +1728,10 @@ function renderPlanItems(items) {
       const r=getRecipe(item.recipeId); if(!r) return;
       const n=recipeNutritionPerPortion(r), kcal=n.kcal*item.portionsThisWeek, idx=plan.indexOf(item);
       var srcLabel = item.cookNew ? (item.cooked ? '✓ Gekocht' : 'Koche '+(item.portionsCooked||item.portionsThisWeek)+'x') : '🍱 Meal Prep';
-      var cookBtn = (item.cookNew&&!item.cooked) ? '<button style="color:var(--primary);font-weight:700" onclick="markRecipeCooked('+idx+')">Gekocht?</button>' : '';
-      h+='<div class="plan-item"><div class="plan-item-info"><h4>'+r.name+'</h4><span class="plan-meta">'+item.portionsThisWeek+'x essen | '+srcLabel+' | '+kcal+'kcal</span></div><div class="plan-item-actions">'+cookBtn+'<button onclick="removePlanItem('+idx+')">&#10005;</button></div></div>';
+      var cookBtn = '';
+      if (item.cookNew&&!item.cooked) cookBtn='<button style="color:var(--primary);font-weight:700" onclick="markRecipeCooked('+idx+')">Gekocht?</button>';
+      else if (item.cookNew&&item.cooked) cookBtn='<button style="color:var(--text-muted);opacity:0.55;cursor:default" disabled>✓ Gekocht</button>';
+      h+='<div class="plan-item"><div class="plan-item-info"><h4>'+r.name+'</h4><span class="plan-meta">'+item.portionsThisWeek+'x essen | '+srcLabel+' | '+kcal+'kcal</span></div><div class="plan-item-actions">'+cookBtn+'<button onclick="confirmRemoveRecipe('+idx+')">&#10005;</button></div></div>';
       return;
     }
     const food=getFood(item.foodId); if(!food) return;
@@ -2104,8 +2106,8 @@ function renderRecipes() {
       });
       if(r.notizen) h+='<div style="font-size:0.8rem;color:var(--text-light);margin:8px 0;font-style:italic">'+r.notizen+'</div>';
       h+='<div class="recipe-totals">Pro Portion: <strong>'+n.kcal+' kcal</strong> | '+n.p+'g E | '+n.f+'g F | '+n.c+'g KH</div>';
-      h+='<button class="btn-add" onclick="addRecipeToShop(\''+r.id+'\')">Zutaten einkaufen</button>';
-      h+='<div class="food-expand-actions"><button onclick="addRecipeToPlan(\''+r.id+'\')">Zum Wochenplan</button><button onclick="openRecipeModal(\''+r.id+'\')">Bearbeiten</button><button class="btn-delete" onclick="deleteRecipe(\''+r.id+'\')">Löschen</button></div></div>';
+      h+='<button class="btn-add" onclick="addRecipeToPlan(\''+r.id+'\')">Zum Wochenplan hinzufügen</button>';
+      h+='<div class="food-expand-actions"><button onclick="openRecipeModal(\''+r.id+'\')">Bearbeiten</button><button class="btn-delete" onclick="deleteRecipe(\''+r.id+'\')">Löschen</button></div></div>';
     }
     h+='</div>';
   }); }
@@ -2146,7 +2148,8 @@ function addRecipeToPlan(recipeId) {
     h+='<div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px">— oder frisch kochen: —</div>';
   }
   h+='<label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:4px">Wie viele Portionen kochst du?</label>';
-  h+='<div class="stepper" style="display:inline-flex;margin-bottom:12px"><button onclick="stepVal(\'rpCook\',-1,1)">-</button><input type="number" id="rpCook" value="1" min="1" max="20"><button onclick="stepVal(\'rpCook\',1,1)">+</button></div>';
+  if (r.recPortions) h+='<div style="font-size:0.75rem;color:var(--primary);font-weight:600;margin-bottom:4px">💡 Empfohlen: '+r.recPortions+' Portionen kochen (Rezeptmengen passen perfekt)</div>';
+  h+='<div class="stepper" style="display:inline-flex;margin-bottom:12px"><button onclick="stepVal(\'rpCook\',-1,1)">-</button><input type="number" id="rpCook" value="'+(r.recPortions||1)+'" min="1" max="20"><button onclick="stepVal(\'rpCook\',1,1)">+</button></div>';
   h+='<label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:4px">Wie viele isst du diese Woche?</label>';
   h+='<div class="stepper" style="display:inline-flex;margin-bottom:14px"><button onclick="stepVal(\'rpEat\',-1,1)">-</button><input type="number" id="rpEat" value="1" min="1" max="20"><button onclick="stepVal(\'rpEat\',1,1)">+</button></div>';
   h+='<p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:12px">Die Einkaufsliste rechnet mit den Koch-Portionen. Nach dem Kochen drückst du <strong>"Gekocht?"</strong> — dann wird der Vorrat abgebucht und übrige Portionen wandern ins 🍱 Meal Prep.</p>';
@@ -2179,6 +2182,26 @@ function consumeFromPantry(foodId, grams) {
     consumedPantry.push({foodId:pe.foodId,amountG:pe.originalAmountG,pieces:pe.originalPieces,consumedDate:new Date().toISOString()});
     pantry.splice(pantry.indexOf(pe),1);
   }
+}
+
+function confirmRemoveRecipe(idx) {
+  var item=plan[idx]; if(!item||!item.recipeId){removePlanItem(idx);return;}
+  var r=getRecipe(item.recipeId);
+  var name=r?r.name:'Rezept';
+  var weekLabel=item.isBasis?'Basis':'KW '+(currentKW()+(item.week||0));
+  var effects;
+  if (!item.cookNew) {
+    effects='Entfernt aus: Wochenplan ('+weekLabel+') und Makro-Berechnung.<br>Die '+item.portionsThisWeek+' Portion'+(item.portionsThisWeek!==1?'en':'')+' wandern <strong>zurück ins 🍱 Meal Prep</strong>.';
+  } else if (item.cooked) {
+    effects='Entfernt aus: Wochenplan ('+weekLabel+') und Makro-Berechnung.<br><strong>Bleiben erhalten:</strong> die Vorrats-Abbuchung und deine Meal-Prep-Portionen (das Essen existiert ja).';
+  } else {
+    effects='Entfernt aus: Wochenplan ('+weekLabel+'), <strong>Einkaufsliste</strong> (alle Zutaten) und Makro-Berechnung.';
+  }
+  var ov=document.createElement('div');
+  ov.className='confirm-overlay';
+  ov.innerHTML='<div class="confirm-box"><p><strong>'+name+'</strong> wirklich entfernen?<br><small style="display:block;margin-top:8px;line-height:1.5">'+effects+'</small></p><div class="modal-actions"><button class="btn-cancel" onclick="this.closest(\'.confirm-overlay\').remove()">Abbrechen</button><button class="btn-save" style="background:var(--danger)" onclick="removePlanItem('+idx+');this.closest(\'.confirm-overlay\').remove()">Entfernen</button></div></div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
 }
 
 function markRecipeCooked(idx) {
@@ -2250,8 +2273,8 @@ function openRecipeDetail(recipeId) {
   h += '<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 16px 0"><button style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text)" onclick="closeRecipeDetail()">✕</button>';
   h += '<div style="display:flex;gap:12px;align-items:center">';
   if (item.cookNew&&!item.cooked) h += '<button style="background:var(--primary);border:none;font-size:0.82rem;cursor:pointer;color:#fff;font-weight:700;padding:6px 14px;border-radius:8px" onclick="closeRecipeDetail();markRecipeCooked('+idx+')">Gekocht?</button>';
-  if (item.cooked) h += '<span style="font-size:0.8rem;color:var(--primary);font-weight:700">✓ Gekocht</span>';
-  h += '<button style="background:none;border:none;font-size:0.82rem;cursor:pointer;color:var(--danger);font-weight:600" onclick="removePlanItem('+idx+');closeRecipeDetail();render()">Entfernen</button></div></div>';
+  if (item.cooked) h += '<span style="font-size:0.8rem;color:var(--text-muted);opacity:0.7;font-weight:700;padding:6px 14px;border:1.5px solid var(--border);border-radius:8px">✓ Gekocht</span>';
+  h += '<button style="background:none;border:none;font-size:0.82rem;cursor:pointer;color:var(--danger);font-weight:600" onclick="closeRecipeDetail();confirmRemoveRecipe('+idx+')">Entfernen</button></div></div>';
   if (r.img) h += '<div style="padding:12px 24px 0"><img style="width:100%;border-radius:10px;display:block" src="'+r.img+'" onerror="this.parentElement.style.display=\'none\'"></div>';
   h += '<div style="padding:16px">';
   h += '<h3 style="margin:0 0 8px;font-size:1.1rem">'+r.name+'</h3>';
@@ -2776,6 +2799,7 @@ migrateCustomToStandard();
       if(t.img&&existing.img!==t.img){existing.img=t.img;changed++;}
       if(t.notizen&&existing.notizen!==t.notizen){existing.notizen=t.notizen;changed++;}
       if(existing.totalPortions!==t.totalPortions){existing.totalPortions=t.totalPortions;changed++;}
+      if(t.recPortions&&existing.recPortions!==t.recPortions){existing.recPortions=t.recPortions;changed++;}
       // Sync ingredients if amounts changed (template update)
       var tKey=t.ingredients.map(function(x){return x.foodId+':'+x.amountG;}).join(',');
       var eKey=existing.ingredients.map(function(x){return x.foodId+':'+x.amountG;}).join(',');
@@ -2783,7 +2807,7 @@ migrateCustomToStandard();
     } else {
       recipes.push({id:'tmpl_'+i+'_'+Date.now(),name:t.name,totalPortions:t.totalPortions,cat:t.cat||'sonstiges',
         ingredients:t.ingredients.map(function(ing){return{foodId:ing.foodId,amountG:ing.amountG,rolle:ing.rolle};}),
-        notizen:t.notizen||'',img:t.img||''});
+        notizen:t.notizen||'',img:t.img||'',recPortions:t.recPortions||null});
       changed++;
     }
   });
