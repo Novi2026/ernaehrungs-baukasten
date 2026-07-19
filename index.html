@@ -698,6 +698,11 @@ const FOODS_BASE = [
   {id:'nectarine',n:'Nektarine',cat:'fruit',k:60,p:0.9,f:0.1,c:12.4,fb:2.2,pr:2.99,prRef:1000,po:100,mg:[],unit:'stueck',pieceWeight:150,packageSize:1000},
   {id:'fruchtmus',n:'Fruchtmus',cat:'fruit',k:63,p:0.7,f:0.5,c:12,fb:1.5,pr:1.49,prRef:360,po:60,mg:[],unit:'g',pieceWeight:null,packageSize:360},
   {id:'mango',n:'Mango',cat:'fruit',k:60,p:0.8,f:0.4,c:15,fb:1.6,pr:5,prRef:1000,po:150,mg:[],unit:'stueck',pieceWeight:300,packageSize:300},
+  {id:'white_cabbage',n:'Weißkohl',cat:'veg',k:25,p:1.3,f:0.2,c:4.2,fb:3,pr:1.49,prRef:1500,po:250,mg:['greens'],unit:'g',pieceWeight:null,packageSize:1500},
+  {id:'pointed_cabbage',n:'Spitzkohl (weiß)',cat:'veg',k:23,p:2.1,f:0.3,c:3,fb:2.5,pr:1.59,prRef:1000,po:250,mg:['greens'],unit:'g',pieceWeight:null,packageSize:1000},
+  {id:'ground_turkey',n:'Putenhackfleisch (gewürzt)',cat:'protein',k:161,p:17.4,f:9.8,c:0.7,fb:0,pr:2.49,prRef:400,po:200,mg:[],unit:'g',pieceWeight:null,packageSize:400},
+  {id:'ground_beef',n:'Rinderhackfleisch (mager)',cat:'protein',k:125,p:20,f:5,c:0,fb:0,pr:5.99,prRef:400,po:200,mg:[],unit:'g',pieceWeight:null,packageSize:400},
+  {id:'veg_broth',n:'Gemüsebrühe (zubereitet)',cat:'other',k:4,p:0.1,f:0.1,c:0.5,fb:0,pr:0.15,prRef:1000,po:250,mg:[],unit:'ml',pieceWeight:null,packageSize:1000},
   {id:'pear',n:'Birnen',cat:'fruit',k:58,p:0.4,f:0.1,c:15,fb:3.1,pr:2,prRef:1000,po:150,mg:[],unit:'stueck',pieceWeight:180,packageSize:1000},
   {id:'watermelon',n:'Wassermelone',cat:'fruit',k:39,p:0.6,f:0.2,c:8,fb:0.2,pr:1.49,prRef:1000,po:100,mg:['fruit'],unit:'g',pieceWeight:null,packageSize:1000},
   {id:'broccoli',n:'Brokkoli',cat:'veg',k:34,p:2.8,f:0.4,c:7,fb:2.6,pr:2.5,prRef:1000,po:200,mg:['greens'],unit:'g',pieceWeight:null,packageSize:500},
@@ -819,6 +824,11 @@ const RECIPE_CATEGORIES = [
 ];
 
 const RECIPE_TEMPLATES = [
+  {name:'Weißkohleintopf',cat:'suppe',img:'rezeptbilder/kohl.jpg',totalPortions:1,ingredients:[
+    {foodId:'ground_turkey',amountG:67,rolle:'protein'},{foodId:'ground_beef',amountG:67,rolle:'protein'},
+    {foodId:'pointed_cabbage',amountG:300,rolle:'veg'},{foodId:'potato',amountG:167,rolle:'beilage'},
+    {foodId:'veg_broth',amountG:167,rolle:'extras'}
+  ],notizen:'Mengen für 6 Portionen: 400g Putenhack, 400g Rinderhack, 1,8kg Spitzkohl, 1kg Kartoffeln, 1L Gemüsebrühe.\n\nHackfleisch krümelig anbraten. Kohl in Streifen, Kartoffeln würfeln, dazugeben. Mit Brühe auffüllen und ca. 30 Min. köcheln, bis alles weich ist. Mit Salz und gemahlenem Kümmel würzen.\n\nPerfekt zum Einfrieren als Meal Prep!'},
   {name:'Gemüsepfanne',cat:'pfanne',img:'rezeptbilder/pfanne.jpg',totalPortions:1,ingredients:[
     {foodId:'chicken',amountG:150,rolle:'protein'},{foodId:'bellpepper',amountG:80,rolle:'veg'},
     {foodId:'zucchini',amountG:100,rolle:'veg'},{foodId:'rice',amountG:75,rolle:'beilage'},
@@ -1451,6 +1461,7 @@ function shoppingList() {
       });
       recipeGroups.push(group); return;
     }
+    if (item.fromPrep) return; // Meal Prep: schon gekauft
     var totalG = item.portionG * item.servings;
     if (!merged[item.foodId]) merged[item.foodId] = {totalG:0, sources:[]};
     merged[item.foodId].totalG += totalG;
@@ -1475,6 +1486,7 @@ function calcPlanCost(items) {
         const food = getFood(ing.foodId); return food ? s+(ing.amountG*cookMult/food.prRef)*food.pr : s;
       }, 0);
     }
+    if (item.fromPrep) return sum; // Meal Prep: schon bezahlt
     const food = getFood(item.foodId);
     return food ? sum+((item.portionG*item.servings)/food.prRef)*food.pr : sum;
   }, 0);
@@ -1688,7 +1700,8 @@ function renderPlanItems(items) {
     const food=getFood(item.foodId); if(!food) return;
     if (food.cat!==lastCat) { h+='<div class="plan-cat-label">'+(CATEGORIES.find(c=>c.id===food.cat)?.label||'')+'</div>'; lastCat=food.cat; }
     const totalG=item.portionG*item.servings, kcal=Math.round((totalG/100)*food.k), idx=plan.indexOf(item);
-    h+='<div class="plan-item"><div class="plan-item-info"><h4>'+food.n+'</h4><span class="plan-meta">'+item.portionG+'g x'+item.servings+' = '+totalG+'g | '+kcal+'kcal</span></div><div class="plan-item-actions"><button onclick="editPlanItem('+idx+')">&#9998;</button><button onclick="removePlanItem('+idx+')">&#10005;</button></div></div>';
+    var prepTag=item.fromPrep?' | 🍱 Meal Prep':'';
+    h+='<div class="plan-item"><div class="plan-item-info"><h4>'+food.n+'</h4><span class="plan-meta">'+item.portionG+'g x'+item.servings+' = '+totalG+'g | '+kcal+'kcal'+prepTag+'</span></div><div class="plan-item-actions">'+(item.fromPrep?'':'<button onclick="editPlanItem('+idx+')">&#9998;</button>')+'<button onclick="removePlanItem('+idx+')">&#10005;</button></div></div>';
   });
   return h;
 }
@@ -1839,14 +1852,23 @@ function renderMealPrepSection() {
     h+='<div style="font-size:0.8rem;color:var(--text-muted);padding:8px 0">Keine vorbereiteten Portionen. Koche ein Rezept mit mehr Portionen oder füge manuell hinzu.</div>';
   } else {
     mealPrep.forEach(function(m,idx) {
-      var r=getRecipe(m.recipeId);
-      var name=r?r.name:'Unbekanntes Rezept';
-      var n=r?recipeNutritionPerPortion(r):null;
-      h+='<div class="mealprep-item"><div class="mealprep-info"><h4>'+name+'</h4><span class="mealprep-meta">'+m.portions+' Portion'+(m.portions!==1?'en':'')+(n?' | '+n.kcal+' kcal/Portion':'')+'</span></div>';
+      var name, meta;
+      if (m.foodId) {
+        var food=getFood(m.foodId);
+        name=food?food.n:'Unbekannt';
+        var kcal=food?Math.round(food.k*m.portionG/100):0;
+        meta=m.portions+'x '+m.portionG+'g | '+kcal+' kcal/Portion';
+      } else {
+        var r=getRecipe(m.recipeId);
+        name=r?r.name:'Unbekanntes Rezept';
+        var n=r?recipeNutritionPerPortion(r):null;
+        meta=m.portions+' Portion'+(m.portions!==1?'en':'')+(n?' | '+n.kcal+' kcal/Portion':'');
+      }
+      h+='<div class="mealprep-item"><div class="mealprep-info"><h4>'+name+'</h4><span class="mealprep-meta">'+meta+'</span></div>';
       h+='<div class="mealprep-actions">';
       h+='<button onclick="mealPrepStep('+idx+',-1)">−</button>';
       h+='<button onclick="mealPrepStep('+idx+',1)">+</button>';
-      h+='<button style="color:var(--primary);font-weight:700" onclick="planFromMealPrep(\''+m.recipeId+'\')">Einplanen</button>';
+      h+='<button style="color:var(--primary);font-weight:700" onclick="planMealPrepEntry('+idx+')">Einplanen</button>';
       h+='<button style="color:var(--danger)" onclick="mealPrepRemove('+idx+')">✕</button>';
       h+='</div></div>';
     });
@@ -1871,10 +1893,17 @@ function mealPrepRemove(idx) {
 function openMealPrepAdd() {
   var ov=document.createElement('div');
   ov.className='piece-popup-overlay';
-  var opts=recipes.map(function(r){return '<option value="'+r.id+'">'+r.name+'</option>';}).join('');
+  var rOpts=recipes.map(function(r){return '<option value="'+r.id+'">'+r.name+'</option>';}).join('');
+  var sorted=foods.filter(function(f){return !deletedFoods.has(f.id);}).sort(function(a,b){return a.n.localeCompare(b.n,'de');});
+  var fOpts=sorted.map(function(f){return '<option value="'+f.id+'" data-po="'+f.po+'">'+f.n+'</option>';}).join('');
   var h='<div class="piece-popup"><h3>Meal Prep hinzufügen</h3>';
-  h+='<label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:4px">Rezept</label>';
-  h+='<select id="mpRecipe" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:0.85rem;margin-bottom:12px">'+opts+'</select>';
+  h+='<div class="toggle-group" style="margin-bottom:12px"><button class="toggle-opt active" id="mpTypeR" onclick="mpSetType(\'recipe\')">Rezept</button><button class="toggle-opt" id="mpTypeF" onclick="mpSetType(\'food\')">Lebensmittel</button></div>';
+  h+='<div id="mpRecipeWrap"><label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:4px">Rezept</label>';
+  h+='<select id="mpRecipe" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:0.85rem;margin-bottom:12px">'+rOpts+'</select></div>';
+  h+='<div id="mpFoodWrap" style="display:none"><label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:4px">Lebensmittel</label>';
+  h+='<select id="mpFood" onchange="mpFoodChanged()" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:0.85rem;margin-bottom:12px">'+fOpts+'</select>';
+  h+='<label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:4px">Gramm pro Portion</label>';
+  h+='<div class="stepper" style="display:inline-flex;margin-bottom:12px"><button onclick="stepVal(\'mpPortionG\',-10,10)">-</button><input type="number" id="mpPortionG" value="200" min="10" step="10"><button onclick="stepVal(\'mpPortionG\',10,10)">+</button></div></div>';
   h+='<label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:4px">Anzahl Portionen</label>';
   h+='<div class="stepper" style="display:inline-flex;margin-bottom:14px"><button onclick="stepVal(\'mpPortions\',-1,1)">-</button><input type="number" id="mpPortions" value="1" min="1" max="30"><button onclick="stepVal(\'mpPortions\',1,1)">+</button></div>';
   h+='<div style="display:flex;gap:8px"><button class="btn-cancel" style="flex:1;padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;background:var(--bg);color:var(--text-light)" onclick="this.closest(\'.piece-popup-overlay\').remove()">Abbrechen</button><button class="btn-save" style="flex:1;padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;background:var(--primary);color:#fff" onclick="confirmMealPrepAdd()">Hinzufügen</button></div></div>';
@@ -1883,15 +1912,55 @@ function openMealPrepAdd() {
   ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
 }
 
+var mpType='recipe';
+function mpSetType(t) {
+  mpType=t;
+  document.getElementById('mpTypeR').classList.toggle('active',t==='recipe');
+  document.getElementById('mpTypeF').classList.toggle('active',t==='food');
+  document.getElementById('mpRecipeWrap').style.display=t==='recipe'?'block':'none';
+  document.getElementById('mpFoodWrap').style.display=t==='food'?'block':'none';
+}
+
+function mpFoodChanged() {
+  var sel=document.getElementById('mpFood');
+  var po=sel.options[sel.selectedIndex]?.dataset?.po;
+  if (po) document.getElementById('mpPortionG').value=po;
+}
+
 function confirmMealPrepAdd() {
-  var recipeId=document.getElementById('mpRecipe').value;
   var portions=parseInt(document.getElementById('mpPortions').value)||1;
-  var ex=mealPrep.find(function(m){return m.recipeId===recipeId;});
-  if (ex) ex.portions+=portions;
-  else mealPrep.push({recipeId:recipeId,portions:portions,date:new Date().toISOString()});
+  if (mpType==='food') {
+    var foodId=document.getElementById('mpFood').value;
+    var portionG=parseInt(document.getElementById('mpPortionG').value)||100;
+    var ex=mealPrep.find(function(m){return m.foodId===foodId&&m.portionG===portionG;});
+    if (ex) ex.portions+=portions;
+    else mealPrep.push({foodId:foodId,portionG:portionG,portions:portions,date:new Date().toISOString()});
+  } else {
+    var recipeId=document.getElementById('mpRecipe').value;
+    var ex2=mealPrep.find(function(m){return m.recipeId===recipeId;});
+    if (ex2) ex2.portions+=portions;
+    else mealPrep.push({recipeId:recipeId,portions:portions,date:new Date().toISOString()});
+  }
   document.querySelector('.piece-popup-overlay')?.remove();
+  mpType='recipe';
   saveState(); renderPantry();
   showToast(portions+'x Meal Prep hinzugefügt');
+}
+
+function planMealPrepEntry(idx) {
+  var m=mealPrep[idx]; if(!m||m.portions<1) return;
+  if (m.foodId) {
+    var food=getFood(m.foodId); if(!food) return;
+    m.portions-=1;
+    if (m.portions<=0) mealPrep.splice(idx,1);
+    var existing=plan.find(function(p){return p.foodId===m.foodId&&p.fromPrep&&(p.week||0)===activeWeek&&p.portionG===m.portionG;});
+    if (existing) existing.servings+=1;
+    else plan.push({foodId:m.foodId,portionG:m.portionG,servings:1,isBasis:false,week:activeWeek,fromPrep:true});
+    showToast(food.n+' aus Meal Prep eingeplant');
+    render();
+  } else {
+    planFromMealPrep(m.recipeId);
+  }
 }
 
 function renderPantry() {
@@ -2255,7 +2324,7 @@ function addToPlan(fid) {
   const servings=parseInt(document.getElementById('fs-'+fid)?.value)||1;
   const isBasis=document.getElementById('tb-'+fid)?.classList.contains('active')||false;
   const week=isBasis?undefined:activeWeek;
-  const idx=plan.findIndex(function(p){return p.foodId===fid&&(p.week||0)===(week||0);});
+  const idx=plan.findIndex(function(p){return p.foodId===fid&&!p.fromPrep&&(p.week||0)===(week||0);});
   if(idx>=0) plan[idx]={foodId:fid,portionG,servings,isBasis,week:week}; else plan.push({foodId:fid,portionG,servings,isBasis,week:week});
   expandedFood=null; showToast(getFood(fid).n+' hinzugefügt!'); render();
 }
@@ -2268,6 +2337,11 @@ function removePlanItem(idx) {
     var ex=mealPrep.find(function(m){return m.recipeId===item.recipeId;});
     if (ex) ex.portions+=item.portionsThisWeek;
     else mealPrep.push({recipeId:item.recipeId,portions:item.portionsThisWeek,date:new Date().toISOString()});
+  }
+  if (item&&item.fromPrep&&item.foodId) {
+    var exF=mealPrep.find(function(m){return m.foodId===item.foodId&&m.portionG===item.portionG;});
+    if (exF) exF.portions+=item.servings;
+    else mealPrep.push({foodId:item.foodId,portionG:item.portionG,portions:item.servings,date:new Date().toISOString()});
   }
   plan.splice(idx,1); showToast(name+' entfernt'); render();
 }
