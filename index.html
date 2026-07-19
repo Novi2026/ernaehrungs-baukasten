@@ -707,6 +707,7 @@ const FOODS_BASE = [
   {id:'garlic',n:'Knoblauch (frisch)',cat:'veg',k:141,p:6.1,f:0.1,c:28.4,fb:1.8,pr:0.79,prRef:100,po:5,mg:[],unit:'g',pieceWeight:null,packageSize:100},
   {id:'tomato_chunks',n:'Tomaten stückig (Dose)',cat:'veg',k:24,p:1.2,f:0.2,c:3.9,fb:1.1,pr:0.99,prRef:400,po:200,mg:[],unit:'g',pieceWeight:null,packageSize:400},
   {id:'tomato_paste',n:'Tomatenmark',cat:'veg',k:91,p:4.8,f:0.5,c:14.7,fb:4,pr:1.29,prRef:200,po:30,mg:[],unit:'g',pieceWeight:null,packageSize:200},
+  {id:'tortilla',n:'Tortilla-Wraps (Vollkorn)',cat:'grains',k:300,p:8,f:7,c:50,fb:3.5,pr:1.49,prRef:370,po:124,mg:['wholegrains'],unit:'stueck',pieceWeight:62,packageSize:370},
   {id:'pear',n:'Birnen',cat:'fruit',k:58,p:0.4,f:0.1,c:15,fb:3.1,pr:2,prRef:1000,po:150,mg:[],unit:'stueck',pieceWeight:180,packageSize:1000},
   {id:'watermelon',n:'Wassermelone',cat:'fruit',k:39,p:0.6,f:0.2,c:8,fb:0.2,pr:1.49,prRef:1000,po:100,mg:['fruit'],unit:'g',pieceWeight:null,packageSize:1000},
   {id:'broccoli',n:'Brokkoli',cat:'veg',k:34,p:2.8,f:0.4,c:7,fb:2.6,pr:2.5,prRef:1000,po:200,mg:['greens'],unit:'g',pieceWeight:null,packageSize:500},
@@ -836,7 +837,7 @@ const RECIPE_TEMPLATES = [
     {foodId:'mandelmilch',amountG:200,rolle:'extras'},{foodId:'banana',amountG:100,rolle:'extras'},
     {foodId:'sonnenblumenkerne',amountG:5,rolle:'extras'},{foodId:'kuerbiskerne',amountG:5,rolle:'extras'},
     {foodId:'dark_choc',amountG:7,rolle:'extras'},{foodId:'fruchtmus',amountG:80,rolle:'extras'}
-  ],notizen:'Basis für 3 Portionen: 45g Dinkel, 45g Hafer, je 15g Leinsamen (geschrotet), Hanfsamen & Chiasamen, 150g Apfel (gewürfelt), 600ml Mandelmilch ungesüßt.\n\nHerd: Alles aufkochen, 3-5 Min. bei niedriger Hitze köcheln. Mikrowelle: 4 Min. bei 800W, umrühren, weitere 3,5 Min. (aufpassen, dass nichts überläuft!). Danach 10-15 Min. quellen lassen.\n\nPro Portion toppen: 1 kleine Banane (100g), 5g Sonnenblumenkerne, 5g Kürbiskerne, 7g Zartbitterschokolade (70-80%), 80g Fruchtmus nach Geschmack.'},
+  ],notizen:'Basis für 3 Portionen: 45g Dinkel, 45g Hafer, je 15g Leinsamen (geschrotet), Hanfsamen & Chiasamen, 150g Apfel (gewürfelt), 600ml Mandelmilch ungesüßt.\n\nHerd: Alles aufkochen, 3-5 Min. bei niedriger Hitze köcheln. Mikrowelle: 4 Min. bei 800W, umrühren, weitere 3,5 Min. (aufpassen, dass nichts überläuft!). Danach 10-15 Min. quellen lassen.\n\nPro Portion toppen: 1 kleine Banane (100g), 5g Sonnenblumenkerne, 5g Kürbiskerne, 7g Zartbitterschokolade (70-80%), 80g Fruchtmus nach Geschmack.\n\nHält sich super ein paar Tage im Kühlschrank. Einfach kurz erwärmen, umrühren und toppen.'},
   {name:'Bauerntopf',cat:'suppe',img:'rezeptbilder/bauern.jpg',totalPortions:1,ingredients:[
     {foodId:'ground_beef',amountG:160,rolle:'protein'},{foodId:'potato',amountG:200,rolle:'beilage'},
     {foodId:'carrot',amountG:60,rolle:'veg'},{foodId:'bellpepper',amountG:100,rolle:'veg'},
@@ -849,41 +850,54 @@ const RECIPE_TEMPLATES = [
     {foodId:'pointed_cabbage',amountG:300,rolle:'veg'},{foodId:'potato',amountG:167,rolle:'beilage'},
     {foodId:'veg_broth',amountG:167,rolle:'extras'}
   ],notizen:'Mengen für 6 Portionen: 400g Putenhack, 400g Rinderhack, 1,8kg Spitzkohl, 1kg Kartoffeln, 1L Gemüsebrühe.\n\nHackfleisch krümelig anbraten. Kohl in Streifen, Kartoffeln würfeln, dazugeben. Mit Brühe auffüllen und ca. 30 Min. köcheln, bis alles weich ist. Mit Salz und gemahlenem Kümmel würzen.\n\nPerfekt zum Einfrieren als Meal Prep!'},
-  {name:'Gemüsepfanne',cat:'pfanne',img:'rezeptbilder/pfanne.jpg',totalPortions:1,ingredients:[
-    {foodId:'chicken',amountG:150,rolle:'protein'},{foodId:'bellpepper',amountG:80,rolle:'veg'},
-    {foodId:'zucchini',amountG:100,rolle:'veg'},{foodId:'rice',amountG:75,rolle:'beilage'},
-    {foodId:'olive_oil',amountG:8,rolle:'extras'}
-  ],notizen:'Reis kochen. Hähnchen in Streifen schneiden, scharf anbraten. Gemüse dazu, 3-4 Min. knackig braten. Mit Reis servieren.'},
-  {name:'Pasta mit Sauce',cat:'pasta',img:'rezeptbilder/pasta.jpg',totalPortions:1,ingredients:[
-    {foodId:'beef',amountG:120,rolle:'protein'},{foodId:'tomato',amountG:150,rolle:'veg'},
-    {foodId:'bellpepper',amountG:60,rolle:'veg'},{foodId:'pasta',amountG:80,rolle:'beilage'},
-    {foodId:'olive_oil',amountG:8,rolle:'extras'}
-  ],notizen:'Pasta kochen. Hack krümelig anbraten, Paprika dazu, Tomaten aufgießen, 10 Min. köcheln. Abschmecken, über die Pasta geben.'},
+  {name:'Hähnchen-Gemüsepfanne',cat:'pfanne',img:'rezeptbilder/pfanne.jpg',totalPortions:1,ingredients:[
+    {foodId:'chicken',amountG:150,rolle:'protein'},{foodId:'bellpepper',amountG:100,rolle:'veg'},
+    {foodId:'zucchini',amountG:100,rolle:'veg'},{foodId:'onion',amountG:30,rolle:'veg'},
+    {foodId:'garlic',amountG:3,rolle:'veg'},{foodId:'rice',amountG:70,rolle:'beilage'},
+    {foodId:'olive_oil',amountG:8,rolle:'extras'},{foodId:'tomato_paste',amountG:10,rolle:'extras'},
+    {foodId:'veg_broth',amountG:100,rolle:'extras'},{foodId:'honey',amountG:3,rolle:'extras'}
+  ],notizen:'Reis nach Packung kochen. Hähnchen würfeln, mit Paprikapulver, Salz und Pfeffer würzen, im heißen Öl scharf anbraten und rausnehmen. Zwiebel anschwitzen, Knoblauch dazupressen. Paprika und Zucchini 3-4 Min. knackig braten. Tomatenmark und Honig kurz mitrösten, mit der Brühe ablöschen. Hähnchen zurück in die Pfanne, 2 Min. einkochen lassen. Mit Reis servieren.'},
+  {name:'Pasta Bolognese',cat:'pasta',img:'rezeptbilder/pasta.jpg',totalPortions:1,ingredients:[
+    {foodId:'ground_beef',amountG:125,rolle:'protein'},{foodId:'onion',amountG:30,rolle:'veg'},
+    {foodId:'garlic',amountG:3,rolle:'veg'},{foodId:'carrot',amountG:40,rolle:'veg'},
+    {foodId:'tomato_chunks',amountG:200,rolle:'veg'},{foodId:'pasta',amountG:80,rolle:'beilage'},
+    {foodId:'tomato_paste',amountG:15,rolle:'extras'},{foodId:'olive_oil',amountG:5,rolle:'extras'},
+    {foodId:'honey',amountG:3,rolle:'extras'}
+  ],notizen:'Nudeln nach Packung kochen. Zwiebel und Karotte fein würfeln. Hack im Öl krümelig braten, Zwiebel und Karotte mit anschwitzen, Knoblauch dazupressen. Tomatenmark kurz mitrösten. Mit den Dosentomaten ablöschen, Honig dazu (nimmt die Säure), 15-20 Min. offen köcheln lassen. Mit Salz, Pfeffer, Oregano und Basilikum abschmecken.'},
   {name:'Buddha Bowl',cat:'bowl',img:'rezeptbilder/bowl.jpg',totalPortions:1,ingredients:[
     {foodId:'tofu',amountG:120,rolle:'protein'},{foodId:'spinach',amountG:50,rolle:'veg'},
-    {foodId:'carrot',amountG:60,rolle:'veg'},{foodId:'avocado',amountG:40,rolle:'veg'},
-    {foodId:'quinoa',amountG:60,rolle:'beilage'},{foodId:'olive_oil',amountG:5,rolle:'extras'}
-  ],notizen:'Quinoa kochen. Tofu würfeln und knusprig anbraten. Karotte raspeln, Avocado in Scheiben. Alles in einer Bowl anrichten, Spinat als Bett.'},
-  {name:'Salat mit Protein',cat:'salat',img:'rezeptbilder/salat.jpg',totalPortions:1,ingredients:[
+    {foodId:'carrot',amountG:60,rolle:'veg'},{foodId:'cucumber',amountG:60,rolle:'veg'},
+    {foodId:'quinoa',amountG:60,rolle:'beilage'},{foodId:'avocado',amountG:50,rolle:'extras'},
+    {foodId:'greek_yog',amountG:50,rolle:'extras'},{foodId:'olive_oil',amountG:5,rolle:'extras'},
+    {foodId:'honey',amountG:3,rolle:'extras'},{foodId:'kuerbiskerne',amountG:10,rolle:'extras'}
+  ],notizen:'Quinoa nach Packung kochen. Tofu würfeln, gut trocken tupfen, mit Paprikapulver und Salz würzen und im Öl knusprig braten. Karotte raspeln, Gurke in Scheiben, Avocado in Spalten.\n\nDressing: Joghurt, Honig, Salz, Pfeffer und einen Spritzer Wasser glatt rühren.\n\nAlles auf Spinat-Bett anrichten, Dressing darüber, mit Kürbiskernen toppen.'},
+  {name:'Großer Hähnchensalat',cat:'salat',img:'rezeptbilder/salat.jpg',totalPortions:1,ingredients:[
     {foodId:'chicken',amountG:150,rolle:'protein'},{foodId:'iceberg',amountG:100,rolle:'veg'},
-    {foodId:'tomato',amountG:80,rolle:'veg'},{foodId:'cucumber',amountG:60,rolle:'veg'},
-    {foodId:'feta',amountG:30,rolle:'extras'},{foodId:'olive_oil',amountG:10,rolle:'extras'}
-  ],notizen:'Hähnchen würzen und in der Pfanne braten, in Streifen schneiden. Salat, Tomaten und Gurke anrichten. Feta darüber bröseln, mit Olivenöl beträufeln.'},
-  {name:'Ofengemüse mit Beilage',cat:'ofen',img:'rezeptbilder/ofen.jpg',totalPortions:1,ingredients:[
-    {foodId:'chicken',amountG:150,rolle:'protein'},{foodId:'sweetpotato',amountG:150,rolle:'veg'},
+    {foodId:'tomato',amountG:100,rolle:'veg'},{foodId:'cucumber',amountG:100,rolle:'veg'},
+    {foodId:'bellpepper',amountG:50,rolle:'veg'},{foodId:'bread',amountG:50,rolle:'beilage'},
+    {foodId:'feta',amountG:40,rolle:'extras'},{foodId:'kuerbiskerne',amountG:10,rolle:'extras'},
+    {foodId:'olive_oil',amountG:10,rolle:'extras'},{foodId:'honey',amountG:3,rolle:'extras'}
+  ],notizen:'Hähnchen würzen (Paprika, Salz, Pfeffer), in der Pfanne goldbraun braten und in Streifen schneiden. Salat, Tomaten, Gurke und Paprika mundgerecht schneiden.\n\nDressing: Olivenöl, Honig, 1 EL Essig oder Zitronensaft, Salz und Pfeffer verquirlen.\n\nAlles mischen, Feta darüber bröseln, Kürbiskerne drauf. Mit Vollkornbrot servieren — macht satt!'},
+  {name:'Ofengemüse mit Kräuterquark',cat:'ofen',img:'rezeptbilder/ofen.jpg',totalPortions:1,ingredients:[
+    {foodId:'chicken',amountG:150,rolle:'protein'},{foodId:'sweetpotato',amountG:200,rolle:'veg'},
     {foodId:'broccoli',amountG:100,rolle:'veg'},{foodId:'bellpepper',amountG:80,rolle:'veg'},
-    {foodId:'olive_oil',amountG:10,rolle:'extras'}
-  ],notizen:'Ofen auf 200°C vorheizen. Gemüse und Hähnchen würfeln, mit Öl und Gewürzen mischen. Auf Backblech verteilen, 25 Min. backen bis goldbraun.'},
-  {name:'Eintopf / Suppe',cat:'suppe',img:'rezeptbilder/eintopf.jpg',totalPortions:1,ingredients:[
-    {foodId:'red_lentils',amountG:50,rolle:'protein'},{foodId:'carrot',amountG:80,rolle:'veg'},
-    {foodId:'zucchini',amountG:80,rolle:'veg'},{foodId:'potato',amountG:100,rolle:'beilage'},
+    {foodId:'zucchini',amountG:80,rolle:'veg'},{foodId:'onion',amountG:30,rolle:'veg'},
+    {foodId:'olive_oil',amountG:10,rolle:'extras'},{foodId:'quark',amountG:100,rolle:'extras'},
+    {foodId:'garlic',amountG:2,rolle:'extras'}
+  ],notizen:'Ofen auf 200°C Umluft vorheizen. Süßkartoffel, Paprika, Zucchini und Zwiebel in Stücke schneiden, Brokkoli in Röschen teilen. Mit Öl, Paprikapulver, Salz und Pfeffer mischen, auf ein Blech. Hähnchen würzen und mittig dazulegen. 25-30 Min. backen, bis alles goldbraun ist.\n\nKräuterquark: Quark mit gepresstem Knoblauch, Salz, Pfeffer und Kräutern (TK oder frisch) verrühren, ggf. Schuss Mineralwasser für die Cremigkeit.'},
+  {name:'Rote-Linsen-Eintopf',cat:'suppe',img:'rezeptbilder/eintopf.jpg',totalPortions:1,ingredients:[
+    {foodId:'red_lentils',amountG:70,rolle:'protein'},{foodId:'carrot',amountG:80,rolle:'veg'},
+    {foodId:'zucchini',amountG:80,rolle:'veg'},{foodId:'onion',amountG:30,rolle:'veg'},
+    {foodId:'garlic',amountG:3,rolle:'veg'},{foodId:'potato',amountG:100,rolle:'beilage'},
+    {foodId:'tomato_paste',amountG:15,rolle:'extras'},{foodId:'veg_broth',amountG:400,rolle:'extras'},
     {foodId:'olive_oil',amountG:5,rolle:'extras'}
-  ],notizen:'Kartoffeln und Karotten würfeln, in Öl kurz anschwitzen. Linsen und Zucchini dazu, mit 400ml Brühe aufgießen. 20 Min. köcheln bis alles weich ist.'},
-  {name:'Wrap / Tortilla',cat:'wrap',img:'rezeptbilder/wrap.jpg',totalPortions:1,ingredients:[
-    {foodId:'chicken',amountG:100,rolle:'protein'},{foodId:'iceberg',amountG:30,rolle:'veg'},
-    {foodId:'tomato',amountG:50,rolle:'veg'},{foodId:'bellpepper',amountG:40,rolle:'veg'},
-    {foodId:'gouda',amountG:20,rolle:'extras'}
-  ],notizen:'Hähnchen in Streifen braten, würzen. Tortilla kurz in der Pfanne erwärmen. Salat, Tomaten, Paprika und Käse drauf, Hähnchen dazu, einrollen.'}
+  ],notizen:'Zwiebel im Öl anschwitzen, Knoblauch dazupressen. Tomatenmark kurz mitrösten. Kartoffeln und Karotten würfeln, mit den Linsen dazugeben. Mit der Brühe aufgießen und 15 Min. köcheln. Zucchini würfeln, dazugeben und weitere 5-10 Min. köcheln, bis alles weich ist. Mit Salz, Pfeffer, Kreuzkümmel und einem Spritzer Zitrone abschmecken.\n\nVegetarisch, proteinreich und voller Ballaststoffe. Lässt sich super einfrieren!'},
+  {name:'Hähnchen-Wraps',cat:'wrap',img:'rezeptbilder/wrap.jpg',totalPortions:1,ingredients:[
+    {foodId:'chicken',amountG:120,rolle:'protein'},{foodId:'tortilla',amountG:124,rolle:'beilage'},
+    {foodId:'iceberg',amountG:40,rolle:'veg'},{foodId:'tomato',amountG:60,rolle:'veg'},
+    {foodId:'bellpepper',amountG:40,rolle:'veg'},{foodId:'gouda',amountG:20,rolle:'extras'},
+    {foodId:'greek_yog',amountG:40,rolle:'extras'},{foodId:'garlic',amountG:2,rolle:'extras'}
+  ],notizen:'Für 2 Wraps: Hähnchen in Streifen schneiden, mit Paprikapulver, Salz und Pfeffer würzen und goldbraun braten.\n\nKnoblauch-Joghurt-Sauce: Joghurt mit gepresstem Knoblauch, Salz und Pfeffer verrühren.\n\nTortillas kurz in der Pfanne erwärmen (werden dann rollbar). Sauce auf die Tortillas streichen, Salat, Tomaten, Paprika, Hähnchen und Käse darauf verteilen. Seiten einklappen und fest aufrollen. Wer mag: kurz im Kontaktgrill oder der Pfanne anrösten.'}
 ];
 
 // ============================================================
@@ -2751,6 +2765,9 @@ migrateCustomToStandard();
 // Seed template recipes — add missing + sync existing with template data
 (function(){
   var changed=0;
+  // Migration: alte Template-Namen umbenennen, damit der Sync sie aktualisiert statt dupliziert
+  var RECIPE_RENAMES={'Gemüsepfanne':'Hähnchen-Gemüsepfanne','Pasta mit Sauce':'Pasta Bolognese','Salat mit Protein':'Großer Hähnchensalat','Ofengemüse mit Beilage':'Ofengemüse mit Kräuterquark','Eintopf / Suppe':'Rote-Linsen-Eintopf','Wrap / Tortilla':'Hähnchen-Wraps'};
+  recipes.forEach(function(r){ if(RECIPE_RENAMES[r.name]){ r.name=RECIPE_RENAMES[r.name]; changed++; } });
   RECIPE_TEMPLATES.forEach(function(t,i){
     var existing=recipes.find(function(r){return r.name===t.name;});
     if(existing){
