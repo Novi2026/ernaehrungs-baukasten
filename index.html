@@ -1693,8 +1693,9 @@ function renderPlanItems(items) {
       if (!shownR) { h+='<div class="plan-cat-label">Rezepte</div>'; shownR=true; }
       const r=getRecipe(item.recipeId); if(!r) return;
       const n=recipeNutritionPerPortion(r), kcal=n.kcal*item.portionsThisWeek, idx=plan.indexOf(item);
-      var srcLabel = item.cookNew ? ((item.portionsCooked||0)>item.portionsThisWeek ? 'Koche '+item.portionsCooked+'x' : 'Neu') : '🍱 Meal Prep';
-      h+='<div class="plan-item"><div class="plan-item-info"><h4>'+r.name+'</h4><span class="plan-meta">'+item.portionsThisWeek+'x essen | '+srcLabel+' | '+kcal+'kcal</span></div><div class="plan-item-actions"><button onclick="removePlanItem('+idx+')">&#10005;</button></div></div>';
+      var srcLabel = item.cookNew ? (item.cooked ? '✓ Gekocht' : 'Koche '+(item.portionsCooked||item.portionsThisWeek)+'x') : '🍱 Meal Prep';
+      var cookBtn = (item.cookNew&&!item.cooked) ? '<button style="color:var(--primary);font-weight:700" onclick="markRecipeCooked('+idx+')">Gekocht?</button>' : '';
+      h+='<div class="plan-item"><div class="plan-item-info"><h4>'+r.name+'</h4><span class="plan-meta">'+item.portionsThisWeek+'x essen | '+srcLabel+' | '+kcal+'kcal</span></div><div class="plan-item-actions">'+cookBtn+'<button onclick="removePlanItem('+idx+')">&#10005;</button></div></div>';
       return;
     }
     const food=getFood(item.foodId); if(!food) return;
@@ -2114,7 +2115,7 @@ function addRecipeToPlan(recipeId) {
   h+='<div class="stepper" style="display:inline-flex;margin-bottom:12px"><button onclick="stepVal(\'rpCook\',-1,1)">-</button><input type="number" id="rpCook" value="1" min="1" max="20"><button onclick="stepVal(\'rpCook\',1,1)">+</button></div>';
   h+='<label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:4px">Wie viele isst du diese Woche?</label>';
   h+='<div class="stepper" style="display:inline-flex;margin-bottom:14px"><button onclick="stepVal(\'rpEat\',-1,1)">-</button><input type="number" id="rpEat" value="1" min="1" max="20"><button onclick="stepVal(\'rpEat\',1,1)">+</button></div>';
-  h+='<p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:12px">Übrige Portionen landen automatisch im <strong>Meal Prep</strong> Vorrat.</p>';
+  h+='<p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:12px">Die Einkaufsliste rechnet mit den Koch-Portionen. Nach dem Kochen drückst du <strong>"Gekocht?"</strong> — dann wird der Vorrat abgebucht und übrige Portionen wandern ins 🍱 Meal Prep.</p>';
   h+='<div style="display:flex;gap:8px"><button class="btn-cancel" style="flex:1;padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;background:var(--bg);color:var(--text-light)" onclick="this.closest(\'.piece-popup-overlay\').remove()">Abbrechen</button><button class="btn-save" style="flex:1;padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;background:var(--primary);color:#fff" onclick="confirmAddRecipe(\''+recipeId+'\')">Hinzufügen</button></div></div>';
   ov.innerHTML=h;
   document.body.appendChild(ov);
@@ -2126,17 +2127,61 @@ function confirmAddRecipe(recipeId) {
   var cook=parseInt(document.getElementById('rpCook').value)||1;
   var eat=parseInt(document.getElementById('rpEat').value)||1;
   if (eat>cook) eat=cook;
-  plan.push({recipeId:recipeId,portionsThisWeek:eat,portionsCooked:cook,cookNew:true,isBasis:false,week:activeWeek});
-  var leftover=cook-eat;
-  if (leftover>0) {
-    var ex=mealPrep.find(function(m){return m.recipeId===recipeId;});
-    if (ex) ex.portions+=leftover;
-    else mealPrep.push({recipeId:recipeId,portions:leftover,date:new Date().toISOString()});
-    showToast(r.name+': '+eat+'x essen, '+leftover+'x Meal Prep');
-  } else {
-    showToast(r.name+' → KW '+(currentKW()+activeWeek));
-  }
+  plan.push({recipeId:recipeId,portionsThisWeek:eat,portionsCooked:cook,cooked:false,cookNew:true,isBasis:false,week:activeWeek});
+  showToast(r.name+' → KW '+(currentKW()+activeWeek)+(cook>eat?' (koche '+cook+'x)':''));
   document.querySelector('.piece-popup-overlay')?.remove();
+  render();
+}
+
+function consumeFromPantry(foodId, grams) {
+  var pe=pantry.find(function(p){return p.foodId===foodId;});
+  if (!pe) return;
+  var used=Math.min(pe.amountG, grams);
+  pe.amountG-=used;
+  if (pe.pieces&&pe.originalAmountG>0) {
+    pe.pieces=Math.max(0,Math.round(pe.pieces*(pe.amountG/pe.originalAmountG)));
+  }
+  if (pe.amountG<=0) {
+    consumedPantry.push({foodId:pe.foodId,amountG:pe.originalAmountG,pieces:pe.originalPieces,consumedDate:new Date().toISOString()});
+    pantry.splice(pantry.indexOf(pe),1);
+  }
+}
+
+function markRecipeCooked(idx) {
+  var item=plan[idx]; if(!item||!item.recipeId||item.cooked) return;
+  var r=getRecipe(item.recipeId); if(!r) return;
+  var cook=item.portionsCooked||item.portionsThisWeek||1;
+  var ov=document.createElement('div');
+  ov.className='piece-popup-overlay';
+  var h='<div class="piece-popup"><h3>'+r.name+' gekocht?</h3>';
+  h+='<label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:4px">Wie viele Portionen sind es geworden?</label>';
+  h+='<div class="stepper" style="display:inline-flex;margin-bottom:12px"><button onclick="stepVal(\'ckPortions\',-1,1)">-</button><input type="number" id="ckPortions" value="'+cook+'" min="1" max="30"><button onclick="stepVal(\'ckPortions\',1,1)">+</button></div>';
+  h+='<p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:12px">Die Zutaten werden aus dem Vorrat abgebucht. Portionen, die du diese Woche nicht isst ('+item.portionsThisWeek+'x geplant), wandern ins 🍱 Meal Prep.</p>';
+  h+='<div style="display:flex;gap:8px"><button class="btn-cancel" style="flex:1;padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;background:var(--bg);color:var(--text-light)" onclick="this.closest(\'.piece-popup-overlay\').remove()">Abbrechen</button><button class="btn-save" style="flex:1;padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;background:var(--primary);color:#fff" onclick="confirmCooked('+idx+')">Gekocht ✓</button></div></div>';
+  ov.innerHTML=h;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
+}
+
+function confirmCooked(idx) {
+  var item=plan[idx]; if(!item) return;
+  var r=getRecipe(item.recipeId); if(!r) return;
+  var cooked=parseInt(document.getElementById('ckPortions').value)||1;
+  // Zutaten aus Vorrat abbuchen (Menge × gekochte Portionen)
+  r.ingredients.forEach(function(ing){
+    consumeFromPantry(ing.foodId, ing.amountG*cooked);
+  });
+  // Übrige Portionen → Meal Prep
+  var leftover=cooked-item.portionsThisWeek;
+  if (leftover>0) {
+    var ex=mealPrep.find(function(m){return m.recipeId===item.recipeId;});
+    if (ex) ex.portions+=leftover;
+    else mealPrep.push({recipeId:item.recipeId,portions:leftover,date:new Date().toISOString()});
+  }
+  item.cooked=true;
+  item.portionsCooked=cooked;
+  document.querySelector('.piece-popup-overlay')?.remove();
+  showToast(leftover>0 ? leftover+'x ins Meal Prep, Vorrat abgebucht' : 'Vorrat abgebucht');
   render();
 }
 
@@ -2169,7 +2214,10 @@ function openRecipeDetail(recipeId) {
   ov.id = 'rdOverlay';
   var h = '<div class="recipe-detail-panel" id="rdPanel">';
   h += '<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 16px 0"><button style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--text)" onclick="closeRecipeDetail()">✕</button>';
-  h += '<button style="background:none;border:none;font-size:0.82rem;cursor:pointer;color:var(--danger);font-weight:600" onclick="removePlanItem('+idx+');closeRecipeDetail();render()">Entfernen</button></div>';
+  h += '<div style="display:flex;gap:12px;align-items:center">';
+  if (item.cookNew&&!item.cooked) h += '<button style="background:var(--primary);border:none;font-size:0.82rem;cursor:pointer;color:#fff;font-weight:700;padding:6px 14px;border-radius:8px" onclick="closeRecipeDetail();markRecipeCooked('+idx+')">Gekocht?</button>';
+  if (item.cooked) h += '<span style="font-size:0.8rem;color:var(--primary);font-weight:700">✓ Gekocht</span>';
+  h += '<button style="background:none;border:none;font-size:0.82rem;cursor:pointer;color:var(--danger);font-weight:600" onclick="removePlanItem('+idx+');closeRecipeDetail();render()">Entfernen</button></div></div>';
   if (r.img) h += '<div style="padding:12px 24px 0"><img style="width:100%;border-radius:10px;display:block" src="'+r.img+'" onerror="this.parentElement.style.display=\'none\'"></div>';
   h += '<div style="padding:16px">';
   h += '<h3 style="margin:0 0 8px;font-size:1.1rem">'+r.name+'</h3>';
