@@ -1480,6 +1480,7 @@ function shoppingList() {
   plan.forEach(function(item) {
     if (item.recipeId) {
       if (!item.cookNew) return;
+      if (item.cooked) return; // schon gekocht — nichts mehr einkaufen
       var recipe = getRecipe(item.recipeId); if (!recipe) return;
       var cookMult = item.portionsCooked || item.portionsThisWeek || 1;
       var weekLabel = item.isBasis ? 'Basis' : 'KW '+(currentKW()+(item.week||0));
@@ -1692,7 +1693,7 @@ function renderPlan() {
   var weekLabel = activeWeek===0?'Diese Woche':'KW '+(currentKW()+activeWeek);
 
   // Planned recipes section at top
-  var weekRecipes = weekly.filter(function(p){return p.recipeId;});
+  var weekRecipes = weekPlan.filter(function(p){return p.recipeId;});
   var h = '';
   if (weekRecipes.length>0) {
     h += '<div class="planned-recipes"><h3 style="margin:0 0 10px;font-size:0.95rem">Geplante Rezepte</h3><div class="planned-recipes-grid">';
@@ -1705,8 +1706,9 @@ function renderPlan() {
       h += '<div class="planned-recipe-card" onclick="openRecipeDetail(\''+item.recipeId+'\')">';
       if (r.img) h += '<div class="planned-recipe-img">'+imgHtml+'<div class="recipe-img-placeholder" style="display:none">'+placeholderIcon+'</div></div>';
       else h += '<div class="planned-recipe-img"><div class="recipe-img-placeholder">'+placeholderIcon+'</div></div>';
+      var statusTag = item.cookNew ? (item.cooked?' | ✓ Gekocht':' | Koche '+(item.portionsCooked||item.portionsThisWeek)+'x') : ' | 🍱';
       h += '<div class="planned-recipe-info"><div class="planned-recipe-name">'+r.name+'</div>';
-      h += '<div class="planned-recipe-meta">'+item.portionsThisWeek+'x | '+n.kcal*item.portionsThisWeek+' kcal</div></div></div>';
+      h += '<div class="planned-recipe-meta">'+item.portionsThisWeek+'x | '+n.kcal*item.portionsThisWeek+' kcal'+statusTag+'</div></div></div>';
     });
     h += '</div></div>';
   }
@@ -1723,17 +1725,7 @@ function renderPlanItems(items) {
   const sorted = sortPlanByCategory(items);
   let h='', lastCat='', shownR=false;
   sorted.forEach(item => {
-    if (item.recipeId) {
-      if (!shownR) { h+='<div class="plan-cat-label">Rezepte</div>'; shownR=true; }
-      const r=getRecipe(item.recipeId); if(!r) return;
-      const n=recipeNutritionPerPortion(r), kcal=n.kcal*item.portionsThisWeek, idx=plan.indexOf(item);
-      var srcLabel = item.cookNew ? (item.cooked ? '✓ Gekocht' : 'Koche '+(item.portionsCooked||item.portionsThisWeek)+'x') : '🍱 Meal Prep';
-      var cookBtn = '';
-      if (item.cookNew&&!item.cooked) cookBtn='<button style="color:var(--primary);font-weight:700" onclick="markRecipeCooked('+idx+')">Gekocht?</button>';
-      else if (item.cookNew&&item.cooked) cookBtn='<button style="color:var(--text-muted);opacity:0.55;cursor:default" disabled>✓ Gekocht</button>';
-      h+='<div class="plan-item"><div class="plan-item-info"><h4>'+r.name+'</h4><span class="plan-meta">'+item.portionsThisWeek+'x essen | '+srcLabel+' | '+kcal+'kcal</span></div><div class="plan-item-actions">'+cookBtn+'<button onclick="confirmRemoveRecipe('+idx+')">&#10005;</button></div></div>';
-      return;
-    }
+    if (item.recipeId) return; // Rezepte werden als Bildkarten oben angezeigt
     const food=getFood(item.foodId); if(!food) return;
     if (food.cat!==lastCat) { h+='<div class="plan-cat-label">'+(CATEGORIES.find(c=>c.id===food.cat)?.label||'')+'</div>'; lastCat=food.cat; }
     const totalG=item.portionG*item.servings, kcal=Math.round((totalG/100)*food.k), idx=plan.indexOf(item);
@@ -1748,6 +1740,12 @@ function renderShopping() {
   const {basis,weekly,recipeGroups} = shoppingList();
   const allItems = [...basis,...weekly];
   recipeGroups.forEach(function(g){g.items.forEach(function(i){allItems.push(i);});});
+  // Verwaiste Kauf-Einträge löschen (Zutat nicht mehr auf der Liste -> alter Kauf zählt nicht gegen neue Rezepte)
+  var neededIds = {};
+  allItems.forEach(function(i){ neededIds[i.foodId]=true; });
+  Object.keys(boughtShop).forEach(function(key){
+    if (key.indexOf('rg_')===0 || !neededIds[key]) delete boughtShop[key];
+  });
   const total = allItems.reduce((s,item)=>s+item.cost,0);
   const budget = profile ? profile.budget : 60;
   document.getElementById('budgetBadge').textContent = total.toFixed(2)+' / '+budget.toFixed(0)+' EUR';
@@ -2630,8 +2628,25 @@ function saveRecipe() {
 }
 
 function deleteRecipe(recipeId) {
-  var r=getRecipe(recipeId);if(!r||!confirm(r.name+' löschen?'))return;
-  recipes=recipes.filter(function(rc){return rc.id!==recipeId;});plan=plan.filter(function(p){return p.recipeId!==recipeId;});
+  var r=getRecipe(recipeId); if(!r) return;
+  var inPlan=plan.filter(function(p){return p.recipeId===recipeId;}).length;
+  var inPrep=mealPrep.find(function(m){return m.recipeId===recipeId;});
+  var effects='Das Rezept wird dauerhaft gelöscht aus:<br>• dem <strong>Rezept-Katalog</strong>';
+  if (inPlan>0) effects+='<br>• dem <strong>Wochenplan</strong> ('+inPlan+' Eintrag'+(inPlan!==1?'e':'')+', alle Wochen)';
+  if (inPrep) effects+='<br>• dem <strong>🍱 Meal Prep</strong> ('+inPrep.portions+' Portion'+(inPrep.portions!==1?'en':'')+')';
+  effects+='<br><br>Das kann nicht rückgängig gemacht werden.';
+  var ov=document.createElement('div');
+  ov.className='confirm-overlay';
+  ov.innerHTML='<div class="confirm-box"><p><strong>'+r.name+'</strong> löschen?<br><small style="display:block;margin-top:8px;line-height:1.5;text-align:left">'+effects+'</small></p><div class="modal-actions"><button class="btn-cancel" onclick="this.closest(\'.confirm-overlay\').remove()">Abbrechen</button><button class="btn-save" style="background:var(--danger)" onclick="doDeleteRecipe(\''+recipeId+'\');this.closest(\'.confirm-overlay\').remove()">Komplettes Rezept löschen</button></div></div>';
+  document.body.appendChild(ov);
+  ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
+}
+
+function doDeleteRecipe(recipeId) {
+  var r=getRecipe(recipeId); if(!r) return;
+  recipes=recipes.filter(function(rc){return rc.id!==recipeId;});
+  plan=plan.filter(function(p){return p.recipeId!==recipeId;});
+  mealPrep=mealPrep.filter(function(m){return m.recipeId!==recipeId;});
   expandedRecipe=null;showToast(r.name+' gelöscht');render();
 }
 
