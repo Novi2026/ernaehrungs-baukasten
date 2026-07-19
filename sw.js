@@ -1,4 +1,4 @@
-const CACHE_NAME = 'eb-cache-v24';
+const CACHE_NAME = 'eb-cache-v25';
 const ASSETS = [
   './',
   './index.html',
@@ -11,14 +11,15 @@ const ASSETS = [
   './rezeptbilder/salat.jpg',
   './rezeptbilder/ofen.jpg',
   './rezeptbilder/eintopf.jpg',
-  './rezeptbilder/wrap.jpg'
+  './rezeptbilder/wrap.jpg',
+  './rezeptbilder/kohl.jpg'
 ];
 
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
-  self.skipWaiting();
+  // Kein skipWaiting hier: Update wartet, bis der User im Banner klickt
 });
 
 self.addEventListener('activate', e => {

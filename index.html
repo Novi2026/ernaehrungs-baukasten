@@ -324,6 +324,13 @@ body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--
 .ing-amount-input::-webkit-inner-spin-button,.ing-amount-input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .shop-sources{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
 .shop-source{font-size:0.68rem;color:var(--text-muted);background:var(--bg);padding:1px 6px;border-radius:4px}
+.mealprep-section{margin:12px 16px;padding:14px;background:var(--card);border-radius:12px;border:1.5px solid var(--primary)}
+.mealprep-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.mealprep-item:last-child{border-bottom:none}
+.mealprep-info h4{font-size:0.85rem;margin:0}
+.mealprep-meta{font-size:0.72rem;color:var(--text-muted)}
+.mealprep-actions{display:flex;gap:4px;align-items:center}
+.mealprep-actions button{padding:5px 9px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);font-size:0.75rem;cursor:pointer;color:var(--text)}
 .recipe-cat-filters{display:flex;gap:6px;overflow-x:auto;padding:4px 0 12px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .recipe-cat-filters::-webkit-scrollbar{display:none}
 .recipe-cat-btn{padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);font-size:0.78rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s}
@@ -866,6 +873,7 @@ let planDays = 7;
 let recipes = [];
 let pantry = [];
 let consumedPantry = [];
+let mealPrep = []; // {recipeId, portions, date}
 let editingFoodId = null;
 let editingRecipeId = null;
 let recipeIngRows = [];
@@ -904,6 +912,7 @@ function loadState() {
     if (d.planDays) planDays = d.planDays;
     if (d.recipes) recipes = d.recipes;
     if (d.pantry) pantry = d.pantry;
+    if (d.mealPrep) mealPrep = d.mealPrep;
     if (typeof d.activeWeek === 'number') activeWeek = d.activeWeek;
     if (d.foodMods) {
       Object.entries(d.foodMods).forEach(([id,mods]) => {
@@ -1010,7 +1019,7 @@ function saveState() {
     localStorage.setItem('pbe_state', JSON.stringify({
       profile, plan, boughtShop, customFoods, foodMods,
       deletedFoods:[...deletedFoods], archivedWeeks, waterLog, planDays, recipes, pantry, consumedPantry,
-      activeWeek: activeWeek
+      activeWeek: activeWeek, mealPrep: mealPrep
     }));
   } catch(e) {}
 }
@@ -1428,15 +1437,17 @@ function shoppingList() {
     if (item.recipeId) {
       if (!item.cookNew) return;
       var recipe = getRecipe(item.recipeId); if (!recipe) return;
+      var cookMult = item.portionsCooked || item.portionsThisWeek || 1;
       var weekLabel = item.isBasis ? 'Basis' : 'KW '+(currentKW()+(item.week||0));
       var group = {name:recipe.name, isBasis:item.isBasis, week:item.week||0, weekLabel:weekLabel, items:[]};
       recipe.ingredients.forEach(function(ing) {
         var food = getFood(ing.foodId); if (!food) return;
+        var amt = ing.amountG * cookMult;
         // Merge into overall merged list too
         if (!merged[ing.foodId]) merged[ing.foodId] = {totalG:0, sources:[]};
-        merged[ing.foodId].totalG += ing.amountG;
-        merged[ing.foodId].sources.push({name:recipe.name, amountG:ing.amountG});
-        group.items.push({foodId:ing.foodId, name:food.n, totalG:ing.amountG, cost:(ing.amountG/food.prRef)*food.pr, cat:food.cat});
+        merged[ing.foodId].totalG += amt;
+        merged[ing.foodId].sources.push({name:recipe.name+(cookMult>1?' ('+cookMult+'x)':''), amountG:amt});
+        group.items.push({foodId:ing.foodId, name:food.n, totalG:amt, cost:(amt/food.prRef)*food.pr, cat:food.cat});
       });
       recipeGroups.push(group); return;
     }
@@ -1459,8 +1470,9 @@ function calcPlanCost(items) {
     if (item.recipeId) {
       if (!item.cookNew) return sum;
       const recipe = getRecipe(item.recipeId); if (!recipe) return sum;
+      const cookMult = item.portionsCooked || item.portionsThisWeek || 1;
       return sum + recipe.ingredients.reduce((s,ing) => {
-        const food = getFood(ing.foodId); return food ? s+(ing.amountG/food.prRef)*food.pr : s;
+        const food = getFood(ing.foodId); return food ? s+(ing.amountG*cookMult/food.prRef)*food.pr : s;
       }, 0);
     }
     const food = getFood(item.foodId);
@@ -1669,7 +1681,8 @@ function renderPlanItems(items) {
       if (!shownR) { h+='<div class="plan-cat-label">Rezepte</div>'; shownR=true; }
       const r=getRecipe(item.recipeId); if(!r) return;
       const n=recipeNutritionPerPortion(r), kcal=n.kcal*item.portionsThisWeek, idx=plan.indexOf(item);
-      h+='<div class="plan-item"><div class="plan-item-info"><h4>'+r.name+'</h4><span class="plan-meta">'+item.portionsThisWeek+'/'+r.totalPortions+' | '+(item.cookNew?'Neu':'Reste')+' | '+kcal+'kcal</span></div><div class="plan-item-actions"><button onclick="removePlanItem('+idx+')">&#10005;</button></div></div>';
+      var srcLabel = item.cookNew ? ((item.portionsCooked||0)>item.portionsThisWeek ? 'Koche '+item.portionsCooked+'x' : 'Neu') : '🍱 Meal Prep';
+      h+='<div class="plan-item"><div class="plan-item-info"><h4>'+r.name+'</h4><span class="plan-meta">'+item.portionsThisWeek+'x essen | '+srcLabel+' | '+kcal+'kcal</span></div><div class="plan-item-actions"><button onclick="removePlanItem('+idx+')">&#10005;</button></div></div>';
       return;
     }
     const food=getFood(item.foodId); if(!food) return;
@@ -1820,9 +1833,71 @@ function pantryAmountDisplay(item,food) {
   return item.amountG>=1000?(item.amountG/1000).toFixed(1)+' kg':Math.round(item.amountG)+'g';
 }
 
+function renderMealPrepSection() {
+  var h='<div class="mealprep-section"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><h3 style="font-size:0.92rem;margin:0">🍱 Meal Prep</h3><button class="header-btn" style="font-size:0.75rem;padding:4px 10px;color:var(--primary);border-color:var(--primary)" onclick="openMealPrepAdd()">+ Hinzufügen</button></div>';
+  if (mealPrep.length===0) {
+    h+='<div style="font-size:0.8rem;color:var(--text-muted);padding:8px 0">Keine vorbereiteten Portionen. Koche ein Rezept mit mehr Portionen oder füge manuell hinzu.</div>';
+  } else {
+    mealPrep.forEach(function(m,idx) {
+      var r=getRecipe(m.recipeId);
+      var name=r?r.name:'Unbekanntes Rezept';
+      var n=r?recipeNutritionPerPortion(r):null;
+      h+='<div class="mealprep-item"><div class="mealprep-info"><h4>'+name+'</h4><span class="mealprep-meta">'+m.portions+' Portion'+(m.portions!==1?'en':'')+(n?' | '+n.kcal+' kcal/Portion':'')+'</span></div>';
+      h+='<div class="mealprep-actions">';
+      h+='<button onclick="mealPrepStep('+idx+',-1)">−</button>';
+      h+='<button onclick="mealPrepStep('+idx+',1)">+</button>';
+      h+='<button style="color:var(--primary);font-weight:700" onclick="planFromMealPrep(\''+m.recipeId+'\')">Einplanen</button>';
+      h+='<button style="color:var(--danger)" onclick="mealPrepRemove('+idx+')">✕</button>';
+      h+='</div></div>';
+    });
+  }
+  h+='</div>';
+  return h;
+}
+
+function mealPrepStep(idx, delta) {
+  var m=mealPrep[idx]; if(!m) return;
+  m.portions+=delta;
+  if (m.portions<=0) mealPrep.splice(idx,1);
+  saveState(); renderPantry();
+}
+
+function mealPrepRemove(idx) {
+  mealPrep.splice(idx,1);
+  saveState(); renderPantry();
+  showToast('Meal Prep entfernt');
+}
+
+function openMealPrepAdd() {
+  var ov=document.createElement('div');
+  ov.className='piece-popup-overlay';
+  var opts=recipes.map(function(r){return '<option value="'+r.id+'">'+r.name+'</option>';}).join('');
+  var h='<div class="piece-popup"><h3>Meal Prep hinzufügen</h3>';
+  h+='<label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:4px">Rezept</label>';
+  h+='<select id="mpRecipe" style="width:100%;padding:10px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);font-size:0.85rem;margin-bottom:12px">'+opts+'</select>';
+  h+='<label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:4px">Anzahl Portionen</label>';
+  h+='<div class="stepper" style="display:inline-flex;margin-bottom:14px"><button onclick="stepVal(\'mpPortions\',-1,1)">-</button><input type="number" id="mpPortions" value="1" min="1" max="30"><button onclick="stepVal(\'mpPortions\',1,1)">+</button></div>';
+  h+='<div style="display:flex;gap:8px"><button class="btn-cancel" style="flex:1;padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;background:var(--bg);color:var(--text-light)" onclick="this.closest(\'.piece-popup-overlay\').remove()">Abbrechen</button><button class="btn-save" style="flex:1;padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;background:var(--primary);color:#fff" onclick="confirmMealPrepAdd()">Hinzufügen</button></div></div>';
+  ov.innerHTML=h;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
+}
+
+function confirmMealPrepAdd() {
+  var recipeId=document.getElementById('mpRecipe').value;
+  var portions=parseInt(document.getElementById('mpPortions').value)||1;
+  var ex=mealPrep.find(function(m){return m.recipeId===recipeId;});
+  if (ex) ex.portions+=portions;
+  else mealPrep.push({recipeId:recipeId,portions:portions,date:new Date().toISOString()});
+  document.querySelector('.piece-popup-overlay')?.remove();
+  saveState(); renderPantry();
+  showToast(portions+'x Meal Prep hinzugefügt');
+}
+
 function renderPantry() {
-  if (pantry.length===0&&consumedPantry.length===0) { document.getElementById('pantryContent').innerHTML='<div class="pantry-empty">Dein Vorrat ist leer.<br>Kaufe Lebensmittel ein, um sie hier zu sehen.</div>'; document.getElementById('pantrySummary').innerHTML=''; return; }
-  let h='<div class="pantry-section">';
+  var mpHtml = renderMealPrepSection();
+  if (pantry.length===0&&consumedPantry.length===0) { document.getElementById('pantryContent').innerHTML=mpHtml+'<div class="pantry-empty">Dein Vorrat ist leer.<br>Kaufe Lebensmittel ein, um sie hier zu sehen.</div>'; document.getElementById('pantrySummary').innerHTML=''; return; }
+  let h=mpHtml+'<div class="pantry-section">';
   if (pantry.length>0) {
     pantry.forEach((item,idx) => {
       const food=getFood(item.foodId); if(!food) return;
@@ -1958,8 +2033,55 @@ function addRecipeToShop(recipeId) {
 function addRecipeToPlan(recipeId) {
   const r=getRecipe(recipeId); if(!r) return;
   if (plan.find(function(p){return p.recipeId===recipeId&&(p.week||0)===activeWeek;})) { showToast('Bereits in dieser Woche'); return; }
-  plan.push({recipeId:recipeId,portionsThisWeek:Math.min(2,r.totalPortions),cookNew:true,isBasis:false,week:activeWeek});
-  showToast(r.name+' → KW '+(currentKW()+activeWeek)); render();
+  var prepStock = mealPrep.find(function(m){return m.recipeId===recipeId&&m.portions>0;});
+  var ov=document.createElement('div');
+  ov.className='piece-popup-overlay';
+  var h='<div class="piece-popup"><h3>'+r.name+'</h3>';
+  if (prepStock) {
+    h+='<div style="background:var(--primary-light);border-radius:8px;padding:10px;margin-bottom:12px;font-size:0.82rem"><strong>'+prepStock.portions+'x im Meal Prep!</strong><br><button style="margin-top:6px;padding:6px 14px;border-radius:8px;border:none;background:var(--primary);color:#fff;font-weight:700;font-size:0.8rem;cursor:pointer" onclick="planFromMealPrep(\''+recipeId+'\');this.closest(\'.piece-popup-overlay\').remove()">Aus Meal Prep essen (kein Einkauf)</button></div>';
+    h+='<div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px">— oder frisch kochen: —</div>';
+  }
+  h+='<label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:4px">Wie viele Portionen kochst du?</label>';
+  h+='<div class="stepper" style="display:inline-flex;margin-bottom:12px"><button onclick="stepVal(\'rpCook\',-1,1)">-</button><input type="number" id="rpCook" value="1" min="1" max="20"><button onclick="stepVal(\'rpCook\',1,1)">+</button></div>';
+  h+='<label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:4px">Wie viele isst du diese Woche?</label>';
+  h+='<div class="stepper" style="display:inline-flex;margin-bottom:14px"><button onclick="stepVal(\'rpEat\',-1,1)">-</button><input type="number" id="rpEat" value="1" min="1" max="20"><button onclick="stepVal(\'rpEat\',1,1)">+</button></div>';
+  h+='<p style="font-size:0.75rem;color:var(--text-muted);margin-bottom:12px">Übrige Portionen landen automatisch im <strong>Meal Prep</strong> Vorrat.</p>';
+  h+='<div style="display:flex;gap:8px"><button class="btn-cancel" style="flex:1;padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;background:var(--bg);color:var(--text-light)" onclick="this.closest(\'.piece-popup-overlay\').remove()">Abbrechen</button><button class="btn-save" style="flex:1;padding:10px;border-radius:8px;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;background:var(--primary);color:#fff" onclick="confirmAddRecipe(\''+recipeId+'\')">Hinzufügen</button></div></div>';
+  ov.innerHTML=h;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
+}
+
+function confirmAddRecipe(recipeId) {
+  var r=getRecipe(recipeId); if(!r) return;
+  var cook=parseInt(document.getElementById('rpCook').value)||1;
+  var eat=parseInt(document.getElementById('rpEat').value)||1;
+  if (eat>cook) eat=cook;
+  plan.push({recipeId:recipeId,portionsThisWeek:eat,portionsCooked:cook,cookNew:true,isBasis:false,week:activeWeek});
+  var leftover=cook-eat;
+  if (leftover>0) {
+    var ex=mealPrep.find(function(m){return m.recipeId===recipeId;});
+    if (ex) ex.portions+=leftover;
+    else mealPrep.push({recipeId:recipeId,portions:leftover,date:new Date().toISOString()});
+    showToast(r.name+': '+eat+'x essen, '+leftover+'x Meal Prep');
+  } else {
+    showToast(r.name+' → KW '+(currentKW()+activeWeek));
+  }
+  document.querySelector('.piece-popup-overlay')?.remove();
+  render();
+}
+
+function planFromMealPrep(recipeId) {
+  var r=getRecipe(recipeId); if(!r) return;
+  var stock=mealPrep.find(function(m){return m.recipeId===recipeId;});
+  if (!stock||stock.portions<1) { showToast('Nichts im Meal Prep'); return; }
+  stock.portions-=1;
+  if (stock.portions<=0) mealPrep.splice(mealPrep.indexOf(stock),1);
+  var existing=plan.find(function(p){return p.recipeId===recipeId&&(p.week||0)===activeWeek&&!p.cookNew;});
+  if (existing) existing.portionsThisWeek+=1;
+  else plan.push({recipeId:recipeId,portionsThisWeek:1,portionsCooked:0,cookNew:false,isBasis:false,week:activeWeek});
+  showToast(r.name+' aus Meal Prep eingeplant');
+  render();
 }
 function recipeNutritionPerPortion(r) {
   let t={kcal:0,p:0,f:0,c:0};
@@ -2141,6 +2263,12 @@ function addToPlan(fid) {
 function removePlanItem(idx) {
   const item=plan[idx]; let name='';
   if(item?.recipeId){const r=getRecipe(item.recipeId);name=r?r.name:'';}else{const f=getFood(item?.foodId);name=f?f.n:'';}
+  // Aus Meal Prep geplante Portionen zurückgeben
+  if (item&&item.recipeId&&item.cookNew===false&&item.portionsThisWeek>0) {
+    var ex=mealPrep.find(function(m){return m.recipeId===item.recipeId;});
+    if (ex) ex.portions+=item.portionsThisWeek;
+    else mealPrep.push({recipeId:item.recipeId,portions:item.portionsThisWeek,date:new Date().toISOString()});
+  }
   plan.splice(idx,1); showToast(name+' entfernt'); render();
 }
 
